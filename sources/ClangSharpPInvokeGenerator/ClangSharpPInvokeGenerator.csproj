@@ -9,33 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Properties/GenerateClang.rsp" />
-    <None Include="Properties/GenerateClang-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="Properties/GenerateClangSharp.rsp" />
-    <None Include="Properties/GenerateClangSharp-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="Properties/GenerateLLVM.rsp" />
-    <None Include="Properties/GenerateLLVM-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="Properties/launchsettings.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="System.CommandLine" GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ClangSharp.PInvokeGenerator\ClangSharp.PInvokeGenerator.csproj" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <LibClangName Condition="'$(LibClangName)' == ''">libclang</LibClangName>
-    <LibClangSharpName Condition="'$(LibClangSharpName)' == ''">libClangSharp</LibClangSharpName>
-    <LibLLVMName Condition="'$(LibLLVMName)' == ''">libLLVM</LibLLVMName>
-  </PropertyGroup>
-
-  <!-- Auto-detect LLVM... more or less -->
-  <PropertyGroup Condition="'$(LLVMIncludePath)' == ''">
-    <LLVMIncludePath Condition="'$(OS)' == 'Windows_NT'">C:\Program Files\LLVM\include</LLVMIncludePath>
-    <LLVMIncludePath Condition="'$(OS)' != 'Windows_NT'">/usr/lib/llvm-15/include</LLVMIncludePath>
-  </PropertyGroup>
 
 </Project>

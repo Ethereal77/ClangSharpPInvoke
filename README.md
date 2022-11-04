@@ -1,41 +1,34 @@
-# ClangSharp
+# ClangSharp P/Invoke Generator
 
-ClangSharp provides Clang bindings written in C#. It is self-hosted and auto-generates itself by parsing the Clang C header files using ClangSharpPInvokeGenerator.
+This is a fork of [ClangSharp](https://github.com/dotnet/clangsharp) simplified to only include the P/Invoke generator
+tool and reference `ClangSharp` as a package reference instead of as a project reference.
 
-![ci](https://github.com/dotnet/clangsharp/workflows/ci/badge.svg?branch=main&event=push)
+The purpose of this is to allow easier modification and experimentation with the P/Invoke generation process without
+needing the native parts.
 
-A nuget package for the project is provided here: https://www.nuget.org/packages/clangsharp.
-A .NET tool for the P/Invoke generator project is provided here: https://www.nuget.org/packages/ClangSharpPInvokeGenerator
+![ci](https://github.com/Ethereal77/clangsharp/workflows/ci/badge.svg?branch=main&event=push)
 
-A convenience package which provides the native libClang library for several platforms is provided here: https://www.nuget.org/packages/libclang
+Please refer to the original [repository](https://github.com/dotnet/clangsharp) for more information about ClangSharp,
+the tool, etc.
 
-A helper package which exposes many Clang APIs missing from libClang is provided here: https://www.nuget.org/packages/libClangSharp
+Many thanks to Tanned Gooding and the .NET Foundation for this awesome tool.
 
-NOTE: libclang and libClangSharp are meta-packages which point to the platform-specific runtime packages ([e.g.](https://www.nuget.org/packages/libClangSharp.runtime.win-x64/15.0.0); see others owned by [tannergooding](https://www.nuget.org/profiles/tannergooding)). Several manual steps may be required to use them, see discussion in [#46](https://github.com/dotnet/ClangSharp/issues/46) and [#118](https://github.com/dotnet/ClangSharp/issues/118).
+**NOTE**: This repository does not accept any issues or PRs. If you want to contribute to ClangSharp or open an issue,
+          do so on the original repository.
 
-Nightly packages are available via the NuGet Feed URL: https://pkgs.clangsharp.dev/index.json
+Below this is the original `README.md` of ClangSharp with the parts that talk about the native projects omitted.
 
-Source browsing is available via: https://source.clangsharp.dev/
+----------------------------------------------------------------------------------------------------------------------
 
 ## Table of Contents
 
-* [Code of Conduct](#code-of-conduct)
 * [License](#license)
 * [Features](#features)
 * [Building Managed](#building-managed)
-* [Building Native](#building-native)
 * [Generating Bindings](#generating-bindings)
 * [Using locally built versions](#using-locally-build-versions)
 * [Spotlight](#spotlight)
 
-### Code of Conduct
-
-ClangSharp and everyone contributing (this includes issues, pull requests, the
-wiki, etc) must abide by the .NET Foundation Code of Conduct:
-https://dotnetfoundation.org/about/code-of-conduct.
-
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported by contacting the project team at conduct@dotnetfoundation.org.
 
 ### License
 
@@ -43,13 +36,6 @@ Copyright (c) .NET Foundation and Contributors. All Rights Reserved.
 Licensed under the MIT License (MIT).
 See [LICENSE.md](LICENSE.md) in the repository root for more information.
 
-### Features
-
- * Auto-generated using Clang C headers files, and supports all functionality exposed by them ~ which means you can build tooling around C/C++
- * Exposes the raw unsafe API for performance
- * Exposes a slightly higher abstraction that is type safe (CXIndex and CXTranslationUnit are different types, despite being pointers internally)
- * Exposes an again slightly higher abstraction that tries to mirror the Clang C++ Type Hierarchy where possible
- * Nearly identical to the Clang C APIs, e.g. `clang_getDiagnosticSpelling` in C, vs. `clang.getDiagnosticSpelling` (notice the . in the C# API)
 
 ### Building Managed
 
@@ -64,51 +50,6 @@ Certain actions are dependent on a previous action having been run at least once
 
 You can see any additional options that are available by passing `-help` on Windows or `--help` on Unix to the available build scripts.
 
-### Building Native
-
-ClangSharp provides a helper library, `libClangSharp`, that exposes additional functionality that is not available in `libClang`.
-Building this requires [CMake 3.13 or later](https://cmake.org/download/) as well as a version of MSVC or Clang that supports C++ 17.
-
-To succesfully build `libClangSharp` you must first build Clang (https://clang.llvm.org/get_started.html). The process done on Windows is roughly:
-```cmd
-git clone --single-branch --branch llvmorg-15.0.0 https://github.com/llvm/llvm-project
-cd llvm-project
-mkdir artifacts/bin
-cd artifacts/bin
-cmake -DLLVM_ENABLE_PROJECTS=clang -DCMAKE_INSTALL_PREFIX=../install -G "Visual Studio 16 2019" -A x64 -Thost=x64 ../../llvm
-```
-
-You can then open `LLVM.sln` in Visual Studio, change the configuration to `Release` and build the `install` project.
-Afterwards, you can then build `libClangSharp` where the process followed is roughly:
-```cmd
-git clone https://github.com/dotnet/clangsharp
-cd clangsharp
-mkdir artifacts/bin/native
-cd artifacts/bin/native
-cmake -DPATH_TO_LLVM=../../../../llvm-project/artifacts/install/ -G "Visual Studio 16 2019" -A x64 -Thost=x64 ../../..
-```
-
-You can then open `libClangSharp.sln` in Visual Studio, change the configuration to `Release` and build the `ALL_BUILD` project.
-
-If you building on Linux
-```
-git clone https://github.com/dotnet/clangsharp
-cd clangsharp
-mkdir artifacts/bin/native
-cd artifacts/bin/native
-cmake -DPATH_TO_LLVM=/usr/lib/llvm/14/ ../../..
-make
-```
-
-or if you prefer Ninja
-```
-git clone https://github.com/dotnet/clangsharp
-cd clangsharp
-mkdir artifacts/bin/native
-cd artifacts/bin/native
-cmake -DPATH_TO_LLVM=/usr/lib/llvm/14/ -G Ninja ../../..
-ninja
-```
 
 ### Generating Bindings
 
