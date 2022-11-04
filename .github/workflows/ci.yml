@@ -27,6 +27,7 @@ jobs:
           ./artifacts/pkg/**/*
           ./artifacts/tst/**/*
         if-no-files-found: error
+
   windows-x86:
     runs-on: ${{ matrix.os }}-latest
     strategy:
@@ -47,6 +48,7 @@ jobs:
           ./artifacts/pkg/**/*
           ./artifacts/tst/**/*
         if-no-files-found: error
+
   linux-x64:
     runs-on: ${{ matrix.os }}-latest
     strategy:
@@ -67,6 +69,7 @@ jobs:
           ./artifacts/pkg/**/*
           ./artifacts/tst/**/*
         if-no-files-found: error
+
   macos-x64:
     runs-on: ${{ matrix.os }}-latest
     strategy:
@@ -87,84 +90,3 @@ jobs:
           ./artifacts/pkg/**/*
           ./artifacts/tst/**/*
         if-no-files-found: error
-  build-nuget-preview:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v3
-    - run: ./scripts/cibuild.cmd -configuration release -architecture x64
-      shell: cmd
-      env:
-        EXCLUDE_RUN_ID_FROM_PACKAGE: true
-        EXCLUDE_SUFFIX_FROM_VERSION: false
-    - uses: actions/setup-dotnet@v2
-      if: ${{ github.event_name == 'push' }}
-      with:
-        dotnet-version: '6.0.x'
-    - run: dotnet tool install --tool-path ./artifacts/tools SignClient
-      if: ${{ github.event_name == 'push' }}
-    - run: ./artifacts/tools/SignClient "Sign" --baseDirectory "${{ github.workspace }}/artifacts/pkg" --input "**/*.nupkg" --config "${{ github.workspace }}/scripts/SignClientSettings.json" --filelist "${{ github.workspace }}/scripts/SignClientFileList.txt" --user "${{ secrets.SC_USER }}" --secret "${{ secrets.SC_PASS }}" --name "ClangSharp" --description "ClangSharp" --descriptionUrl "https://github.com/dotnet/clangsharp"
-      if: ${{ github.event_name == 'push' }}
-    - uses: actions/upload-artifact@v3
-      with:
-        name: nuget_preview
-        path: |
-          ./artifacts/bin/**/*
-          ./artifacts/log/**/*
-          ./artifacts/pkg/**/*
-          ./artifacts/tst/**/*
-        if-no-files-found: error
-  build-nuget-release:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v3
-    - run: ./scripts/cibuild.cmd -configuration release -architecture x64
-      shell: cmd
-      env:
-        EXCLUDE_RUN_ID_FROM_PACKAGE: true
-        EXCLUDE_SUFFIX_FROM_VERSION: true
-    - uses: actions/setup-dotnet@v2
-      if: ${{ github.event_name == 'push' }}
-      with:
-        dotnet-version: '6.0.x'
-    - run: dotnet tool install --tool-path ./artifacts/tools SignClient
-      if: ${{ github.event_name == 'push' }}
-    - run: ./artifacts/tools/SignClient "Sign" --baseDirectory "${{ github.workspace }}/artifacts/pkg" --input "**/*.nupkg" --config "${{ github.workspace }}/scripts/SignClientSettings.json" --filelist "${{ github.workspace }}/scripts/SignClientFileList.txt" --user "${{ secrets.SC_USER }}" --secret "${{ secrets.SC_PASS }}" --name "ClangSharp" --description "ClangSharp" --descriptionUrl "https://github.com/dotnet/clangsharp"
-      if: ${{ github.event_name == 'push' }}
-    - uses: actions/upload-artifact@v3
-      with:
-        name: nuget_release
-        path: |
-          ./artifacts/bin/**/*
-          ./artifacts/log/**/*
-          ./artifacts/pkg/**/*
-          ./artifacts/tst/**/*
-        if-no-files-found: error
-  publish-nightlies-azure:
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' }}
-    needs: [ windows-x64, windows-x86, linux-x64, macos-x64, build-nuget-preview ]
-    steps:
-    - uses: actions/download-artifact@v2
-      with:
-        name: windows_release_x64
-        path: ./artifacts
-    - uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: '6.0.x'
-        source-url: https://pkgs.clangsharp.dev/index.json
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.AZURE_DEVOPS_PAT }}
-    - run: dotnet nuget push "./artifacts/pkg/Release/*.nupkg" --api-key AzureDevOps --skip-duplicate
-  publish-nightlies-github:
-    runs-on: ubuntu-latest
-    if: false
-    needs: [ windows-x64, windows-x86, linux-x64, macos-x64, build-nuget-preview ]
-    steps:
-    - uses: actions/download-artifact@v2
-      with:
-        name: windows_release_x64
-        path: ./artifacts
-    - uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: '6.0.x'
-    - run: dotnet nuget push "./artifacts/pkg/Release/*.nupkg" --source https://nuget.pkg.github.com/dotnet/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
