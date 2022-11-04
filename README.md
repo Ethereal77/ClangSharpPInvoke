@@ -6,7 +6,7 @@ tool and reference `ClangSharp` as a package reference instead of as a project r
 The purpose of this is to allow easier modification and experimentation with the P/Invoke generation process without
 needing the native parts.
 
-![ci](https://github.com/Ethereal77/clangsharp/workflows/ci/badge.svg?branch=main&event=push)
+[![ci](https://github.com/Ethereal77/ClangSharpPInvoke/actions/workflows/ci.yml/badge.svg)](https://github.com/Ethereal77/ClangSharpPInvoke/actions/workflows/ci.yml)
 
 Please refer to the original [repository](https://github.com/dotnet/clangsharp) for more information about ClangSharp,
 the tool, etc.
