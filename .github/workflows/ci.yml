@@ -2,9 +2,10 @@ name: ci
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, v* ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, v* ]
+  workflow_dispatch:
 
 jobs:
   windows-x64:
@@ -41,7 +42,7 @@ jobs:
       shell: cmd
     - uses: actions/upload-artifact@v3
       with:
-        name: ${{ matrix.os }}_${{ matrix.configuration }}_x86
+        name: ${{ matrix.os }}_${{ matrix.configuration }}_${{ matrix.architecture }}
         path: |
           ./artifacts/bin/**/*
           ./artifacts/log/**/*
