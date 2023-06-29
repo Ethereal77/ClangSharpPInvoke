@@ -15,6 +15,9 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using ClangSharp.Abstractions;
 using ClangSharp.Interop;
+using static ClangSharp.Interop.CXDiagnosticSeverity;
+using static ClangSharp.Interop.CXErrorCode;
+using static ClangSharp.Interop.CXTranslationUnit_Flags;
 
 namespace ClangSharp;
 
@@ -23,7 +26,7 @@ public class Program
     private static readonly RootCommand s_rootCommand;
 
     private static readonly Option<bool> s_versionOption;
-    private static readonly Option<string[]> s_addtionalOption;
+    private static readonly Option<string[]> s_additionalOption;
     private static readonly Option<string[]> s_configOption;
     private static readonly Option<string[]> s_defineMacros;
     private static readonly Option<string[]> s_excludedNames;
@@ -67,8 +70,9 @@ public class Program
         // Codegen Options
 
         new TwoColumnHelpRow("compatible-codegen", "Bindings should be generated with .NET Standard 2.0 compatibility. Setting this disables preview code generation."),
-        new TwoColumnHelpRow("latest-codegen", "Bindings should be generated for the latest stable version of .NET/C#. This is currently .NET 6/C# 10."),
-        new TwoColumnHelpRow("preview-codegen", "Bindings should be generated for the latest preview version of .NET/C#. This is currently .NET 7/C# 11."),
+        new TwoColumnHelpRow("default-codegen", "Bindings should be generated for the current LTS version of .NET/C#. This is currently .NET 6/C# 10."),
+        new TwoColumnHelpRow("latest-codegen", "Bindings should be generated for the current STS version of .NET/C#. This is currently .NET 7/C# 11."),
+        new TwoColumnHelpRow("preview-codegen", "Bindings should be generated for the preview version of .NET/C#. This is currently .NET 8/C# 12."),
 
         // File Options
 
@@ -112,6 +116,7 @@ public class Program
         new TwoColumnHelpRow("generate-helper-types", "Code files should be generated for various helper attributes and declared transparent structs."),
         new TwoColumnHelpRow("generate-macro-bindings", "Bindings for macro-definitions should be generated. This currently only works with value like macros and not function-like ones."),
         new TwoColumnHelpRow("generate-marker-interfaces", "Bindings for marker interfaces representing native inheritance hierarchies should be generated."),
+        new TwoColumnHelpRow("generate-native-bitfield-attribute", "[NativeBitfield(\"\", offset: #, length: #)] attribute should be generated to document the encountered bitfield layout."),
         new TwoColumnHelpRow("generate-native-inheritance-attribute", "[NativeInheritance(\"\")] attribute should be generated to document the encountered C++ base type."),
         new TwoColumnHelpRow("generate-setslastsystemerror-attribute", "[SetsLastSystemError] attribute should be generated rather than using SetLastError = true."),
         new TwoColumnHelpRow("generate-template-bindings", "Bindings for template-definitions should be generated. This is currently experimental."),
@@ -127,7 +132,7 @@ public class Program
 
     static Program()
     {
-        s_addtionalOption = GetAdditionalOption();
+        s_additionalOption = GetAdditionalOption();
         s_configOption = GetConfigOption();
         s_defineMacros = GetDefineMacroOption();
         s_excludedNames = GetExcludeOption();
@@ -166,7 +171,7 @@ public class Program
 
         s_rootCommand = new RootCommand("ClangSharp P/Invoke Binding Generator")
         {
-            s_addtionalOption,
+            s_additionalOption,
             s_configOption,
             s_defineMacros,
             s_excludedNames,
@@ -209,13 +214,13 @@ public class Program
     public static IEnumerable<HelpSectionDelegate> GetExtendedHelp(HelpContext context)
     {
         foreach (var sectionDelegate in HelpBuilder.Default.GetLayout())
-            yield return sectionDelegate;
-
-        yield return _ =>
         {
-            Console.WriteLine(
-@"Wildcards:
-You can use * as catch-all rule for remapping procedures. For example if you want make all of your generated code internal you can use --with-access-specifier *=Internal.");
+            yield return sectionDelegate;
+        }
+
+        yield return _ => {
+            Console.WriteLine("Wildcards:");
+            Console.WriteLine("You can use * as catch-all rule for remapping procedures. For example if you want make all of your generated code internal you can use --with-access-specifier *=Internal.");
         };
     }
 
@@ -237,7 +242,7 @@ You can use * as catch-all rule for remapping procedures. For example if you wan
 
     public static void Run(InvocationContext context)
     {
-        var additionalArgs = context.ParseResult.GetValueForOption(s_addtionalOption) ?? Array.Empty<string>();
+        var additionalArgs = context.ParseResult.GetValueForOption(s_additionalOption) ?? Array.Empty<string>();
         var configSwitches = context.ParseResult.GetValueForOption(s_configOption) ?? Array.Empty<string>();
         var defineMacros = context.ParseResult.GetValueForOption(s_defineMacros) ?? Array.Empty<string>();
         var excludedNames = context.ParseResult.GetValueForOption(s_excludedNames) ?? Array.Empty<string>();
@@ -277,7 +282,7 @@ You can use * as catch-all rule for remapping procedures. For example if you wan
 
         if (versionResult is not null)
         {
-            context.Console.WriteLine($"{s_rootCommand.Description} version 15.0.0");
+            context.Console.WriteLine($"{s_rootCommand.Description} version 16.0.6");
             context.Console.WriteLine($"  {clang.getClangVersion()}");
             context.Console.WriteLine($"  {clangsharp.getVersion()}");
             context.ExitCode = -1;
@@ -339,6 +344,15 @@ You can use * as catch-all rule for remapping procedures. For example if you wan
                 case "compatible-codegen":
                 {
                     configOptions |= PInvokeGeneratorConfigurationOptions.GenerateCompatibleCode;
+                    configOptions &= ~PInvokeGeneratorConfigurationOptions.GenerateLatestCode;
+                    configOptions &= ~PInvokeGeneratorConfigurationOptions.GeneratePreviewCode;
+                    break;
+                }
+
+                case "default-codegen":
+                {
+                    configOptions &= ~PInvokeGeneratorConfigurationOptions.GenerateCompatibleCode;
+                    configOptions &= ~PInvokeGeneratorConfigurationOptions.GenerateLatestCode;
                     configOptions &= ~PInvokeGeneratorConfigurationOptions.GeneratePreviewCode;
                     break;
                 }
@@ -346,6 +360,7 @@ You can use * as catch-all rule for remapping procedures. For example if you wan
                 case "latest-codegen":
                 {
                     configOptions &= ~PInvokeGeneratorConfigurationOptions.GenerateCompatibleCode;
+                    configOptions |= PInvokeGeneratorConfigurationOptions.GenerateLatestCode;
                     configOptions &= ~PInvokeGeneratorConfigurationOptions.GeneratePreviewCode;
                     break;
                 }
@@ -353,6 +368,7 @@ You can use * as catch-all rule for remapping procedures. For example if you wan
                 case "preview-codegen":
                 {
                     configOptions &= ~PInvokeGeneratorConfigurationOptions.GenerateCompatibleCode;
+                    configOptions &= ~PInvokeGeneratorConfigurationOptions.GenerateLatestCode;
                     configOptions |= PInvokeGeneratorConfigurationOptions.GeneratePreviewCode;
                     break;
                 }
@@ -548,6 +564,12 @@ You can use * as catch-all rule for remapping procedures. For example if you wan
                     break;
                 }
 
+                case "generate-native-bitfield-attribute":
+                {
+                    configOptions |= PInvokeGeneratorConfigurationOptions.GenerateNativeBitfieldAttribute;
+                    break;
+                }
+
                 case "generate-native-inheritance-attribute":
                 {
                     configOptions |= PInvokeGeneratorConfigurationOptions.GenerateNativeInheritanceAttribute;
@@ -671,12 +693,12 @@ You can use * as catch-all rule for remapping procedures. For example if you wan
         clangCommandLineArgs = clangCommandLineArgs.Concat(defineMacros.Select(x => "--define-macro=" + x)).ToArray();
         clangCommandLineArgs = clangCommandLineArgs.Concat(additionalArgs).ToArray();
 
-        var translationFlags = CXTranslationUnit_Flags.CXTranslationUnit_None;
+        var translationFlags = CXTranslationUnit_None;
 
-        translationFlags |= CXTranslationUnit_Flags.CXTranslationUnit_IncludeAttributedTypes;               // Include attributed types in CXType
-        translationFlags |= CXTranslationUnit_Flags.CXTranslationUnit_VisitImplicitAttributes;              // Implicit attributes should be visited
+        translationFlags |= CXTranslationUnit_IncludeAttributedTypes;               // Include attributed types in CXType
+        translationFlags |= CXTranslationUnit_VisitImplicitAttributes;              // Implicit attributes should be visited
 
-        var config = new PInvokeGeneratorConfiguration(namespaceName, outputLocation, headerFile, outputMode, configOptions) {
+        var config = new PInvokeGeneratorConfiguration(language, std, namespaceName, outputLocation, headerFile, outputMode, configOptions) {
             DefaultClass = methodClassName,
             ExcludedNames = excludedNames,
             IncludedNames = includedNames,
@@ -704,7 +726,7 @@ You can use * as catch-all rule for remapping procedures. For example if you wan
 
         if (config.GenerateMacroBindings)
         {
-            translationFlags |= CXTranslationUnit_Flags.CXTranslationUnit_DetailedPreprocessingRecord;
+            translationFlags |= CXTranslationUnit_DetailedPreprocessingRecord;
         }
 
         var exitCode = 0;
@@ -718,7 +740,7 @@ You can use * as catch-all rule for remapping procedures. For example if you wan
                 var translationUnitError = CXTranslationUnit.TryParse(pinvokeGenerator.IndexHandle, filePath, clangCommandLineArgs, Array.Empty<CXUnsavedFile>(), translationFlags, out var handle);
                 var skipProcessing = false;
 
-                if (translationUnitError != CXErrorCode.CXError_Success)
+                if (translationUnitError != CXError_Success)
                 {
                     context.Console.WriteLine($"Error: Parsing failed for '{filePath}' due to '{translationUnitError}'.");
                     skipProcessing = true;
@@ -734,8 +756,8 @@ You can use * as catch-all rule for remapping procedures. For example if you wan
                         context.Console.Write("    ");
                         context.Console.WriteLine(diagnostic.Format(CXDiagnostic.DefaultDisplayOptions).ToString());
 
-                        skipProcessing |= diagnostic.Severity == CXDiagnosticSeverity.CXDiagnostic_Error;
-                        skipProcessing |= diagnostic.Severity == CXDiagnosticSeverity.CXDiagnostic_Fatal;
+                        skipProcessing |= diagnostic.Severity == CXDiagnostic_Error;
+                        skipProcessing |= diagnostic.Severity == CXDiagnostic_Fatal;
                     }
                 }
 
@@ -1047,7 +1069,7 @@ You can use * as catch-all rule for remapping procedures. For example if you wan
             aliases: new string[] { "--language", "-x" },
             description: "Treat subsequent input files as having type <language>.",
             getDefaultValue: () => "c++"
-        );
+        ).FromAmong("c", "c++");
     }
 
     private static Option<string> GetLibraryOption()

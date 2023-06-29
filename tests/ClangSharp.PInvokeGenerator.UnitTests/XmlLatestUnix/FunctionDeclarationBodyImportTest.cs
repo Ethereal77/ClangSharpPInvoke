@@ -1611,12 +1611,12 @@ void MyFunction()
   <namespace name=""ClangSharp.Test"">
     <struct name=""MyUnion"" access=""public"" layout=""Explicit"">
       <field name=""Anonymous"" access=""public"" offset=""0"">
-        <type native=""MyUnion::(anonymous struct at ClangUnsavedFile.h:3:5)"">_Anonymous_e__Struct</type>
+        <type native=""__AnonymousRecord_ClangUnsavedFile_L3_C5"">_Anonymous_e__Struct</type>
       </field>
       <field name=""a"" access=""public"">
         <type>ref int</type>
         <get>
-          <code>return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.a, 1));</code>
+          <code>return ref Anonymous.a;</code>
         </get>
       </field>
       <struct name=""_Anonymous_e__Struct"" access=""public"">

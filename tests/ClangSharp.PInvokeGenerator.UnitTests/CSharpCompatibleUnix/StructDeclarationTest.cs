@@ -320,6 +320,226 @@ struct MyStruct3
         return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
+    protected override Task BitfieldWithNativeBitfieldAttributeTestImpl()
+    {
+        var inputContents = @"struct MyStruct1
+{
+    unsigned int o0_b0_24 : 24;
+    unsigned int o4_b0_16 : 16;
+    unsigned int o4_b16_3 : 3;
+    int o4_b19_3 : 3;
+    unsigned char o4_b22_1 : 1;
+    int o4_b23_1 : 1;
+    int o4_b24_1 : 1;
+};
+
+struct MyStruct2
+{
+    unsigned int o0_b0_1 : 1;
+    int x;
+    unsigned int o8_b0_1 : 1;
+};
+
+struct MyStruct3
+{
+    unsigned int o0_b0_1 : 1;
+    unsigned int o0_b1_1 : 1;
+};
+";
+
+        var expectedOutputContents = @"namespace ClangSharp.Test
+{
+    public partial struct MyStruct1
+    {
+        [NativeBitfield(""o0_b0_24"", offset: 0, length: 24)]
+        public uint _bitfield1;
+
+        [NativeTypeName(""unsigned int : 24"")]
+        public uint o0_b0_24
+        {
+            get
+            {
+                return _bitfield1 & 0xFFFFFFu;
+            }
+
+            set
+            {
+                _bitfield1 = (_bitfield1 & ~0xFFFFFFu) | (value & 0xFFFFFFu);
+            }
+        }
+
+        [NativeBitfield(""o4_b0_16"", offset: 0, length: 16)]
+        [NativeBitfield(""o4_b16_3"", offset: 16, length: 3)]
+        [NativeBitfield(""o4_b19_3"", offset: 19, length: 3)]
+        [NativeBitfield(""o4_b22_1"", offset: 22, length: 1)]
+        [NativeBitfield(""o4_b23_1"", offset: 23, length: 1)]
+        [NativeBitfield(""o4_b24_1"", offset: 24, length: 1)]
+        public uint _bitfield2;
+
+        [NativeTypeName(""unsigned int : 16"")]
+        public uint o4_b0_16
+        {
+            get
+            {
+                return _bitfield2 & 0xFFFFu;
+            }
+
+            set
+            {
+                _bitfield2 = (_bitfield2 & ~0xFFFFu) | (value & 0xFFFFu);
+            }
+        }
+
+        [NativeTypeName(""unsigned int : 3"")]
+        public uint o4_b16_3
+        {
+            get
+            {
+                return (_bitfield2 >> 16) & 0x7u;
+            }
+
+            set
+            {
+                _bitfield2 = (_bitfield2 & ~(0x7u << 16)) | ((value & 0x7u) << 16);
+            }
+        }
+
+        [NativeTypeName(""int : 3"")]
+        public int o4_b19_3
+        {
+            get
+            {
+                return (int)((_bitfield2 >> 19) & 0x7u);
+            }
+
+            set
+            {
+                _bitfield2 = (_bitfield2 & ~(0x7u << 19)) | (uint)((value & 0x7) << 19);
+            }
+        }
+
+        [NativeTypeName(""unsigned char : 1"")]
+        public byte o4_b22_1
+        {
+            get
+            {
+                return (byte)((_bitfield2 >> 22) & 0x1u);
+            }
+
+            set
+            {
+                _bitfield2 = (_bitfield2 & ~(0x1u << 22)) | (uint)((value & 0x1u) << 22);
+            }
+        }
+
+        [NativeTypeName(""int : 1"")]
+        public int o4_b23_1
+        {
+            get
+            {
+                return (int)((_bitfield2 >> 23) & 0x1u);
+            }
+
+            set
+            {
+                _bitfield2 = (_bitfield2 & ~(0x1u << 23)) | (uint)((value & 0x1) << 23);
+            }
+        }
+
+        [NativeTypeName(""int : 1"")]
+        public int o4_b24_1
+        {
+            get
+            {
+                return (int)((_bitfield2 >> 24) & 0x1u);
+            }
+
+            set
+            {
+                _bitfield2 = (_bitfield2 & ~(0x1u << 24)) | (uint)((value & 0x1) << 24);
+            }
+        }
+    }
+
+    public partial struct MyStruct2
+    {
+        [NativeBitfield(""o0_b0_1"", offset: 0, length: 1)]
+        public uint _bitfield1;
+
+        [NativeTypeName(""unsigned int : 1"")]
+        public uint o0_b0_1
+        {
+            get
+            {
+                return _bitfield1 & 0x1u;
+            }
+
+            set
+            {
+                _bitfield1 = (_bitfield1 & ~0x1u) | (value & 0x1u);
+            }
+        }
+
+        public int x;
+
+        [NativeBitfield(""o8_b0_1"", offset: 0, length: 1)]
+        public uint _bitfield2;
+
+        [NativeTypeName(""unsigned int : 1"")]
+        public uint o8_b0_1
+        {
+            get
+            {
+                return _bitfield2 & 0x1u;
+            }
+
+            set
+            {
+                _bitfield2 = (_bitfield2 & ~0x1u) | (value & 0x1u);
+            }
+        }
+    }
+
+    public partial struct MyStruct3
+    {
+        [NativeBitfield(""o0_b0_1"", offset: 0, length: 1)]
+        [NativeBitfield(""o0_b1_1"", offset: 1, length: 1)]
+        public uint _bitfield;
+
+        [NativeTypeName(""unsigned int : 1"")]
+        public uint o0_b0_1
+        {
+            get
+            {
+                return _bitfield & 0x1u;
+            }
+
+            set
+            {
+                _bitfield = (_bitfield & ~0x1u) | (value & 0x1u);
+            }
+        }
+
+        [NativeTypeName(""unsigned int : 1"")]
+        public uint o0_b1_1
+        {
+            get
+            {
+                return (_bitfield >> 1) & 0x1u;
+            }
+
+            set
+            {
+                _bitfield = (_bitfield & ~(0x1u << 1)) | ((value & 0x1u) << 1);
+            }
+        }
+    }
+}
+";
+
+        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents, PInvokeGeneratorConfigurationOptions.GenerateNativeBitfieldAttribute);
+    }
+
     protected override Task DeclTypeTestImpl()
     {
         var inputContents = @"extern ""C"" void MyFunction();
@@ -914,7 +1134,7 @@ namespace ClangSharp.Test
 
         public {expectedManagedType} y;
 
-        [NativeTypeName(""MyStruct::(anonymous struct at ClangUnsavedFile.h:{line}:{column})"")]
+        [NativeTypeName(""__AnonymousRecord_ClangUnsavedFile_L{line}_C{column}"")]
         public _Anonymous_e__Struct Anonymous;
 
         public ref {expectedManagedType} z
@@ -1009,13 +1229,13 @@ namespace ClangSharp.Test
         {{
             public {expectedManagedType} z;
 
-            [NativeTypeName(""struct (anonymous struct at ClangUnsavedFile.h:14:9)"")]
+            [NativeTypeName(""__AnonymousRecord_ClangUnsavedFile_L14_C9"")]
             public _w_e__Struct w;
 
-            [NativeTypeName(""MyStruct::(anonymous struct at ClangUnsavedFile.h:19:9)"")]
+            [NativeTypeName(""__AnonymousRecord_ClangUnsavedFile_L19_C9"")]
             public _Anonymous1_e__Struct Anonymous1;
 
-            [NativeTypeName(""MyStruct::(anonymous union at ClangUnsavedFile.h:29:9)"")]
+            [NativeTypeName(""__AnonymousRecord_ClangUnsavedFile_L29_C9"")]
             public _Anonymous2_e__Union Anonymous2;
 
             public MyUnion u;
@@ -1035,7 +1255,7 @@ namespace ClangSharp.Test
             {{
                 public {expectedManagedType} value1;
 
-                [NativeTypeName(""MyStruct::(anonymous struct at ClangUnsavedFile.h:23:13)"")]
+                [NativeTypeName(""__AnonymousRecord_ClangUnsavedFile_L23_C13"")]
                 public _Anonymous_e__Struct Anonymous;
 
                 public partial struct _Anonymous_e__Struct
@@ -1106,7 +1326,7 @@ namespace ClangSharp.Test
 
         public int y;
 
-        [NativeTypeName(""MyStruct::(anonymous struct at ClangUnsavedFile.h:6:5)"")]
+        [NativeTypeName(""__AnonymousRecord_ClangUnsavedFile_L6_C5"")]
         public _Anonymous_e__Struct Anonymous;
 
         public ref int z
@@ -1161,7 +1381,7 @@ namespace ClangSharp.Test
         {
             public int z;
 
-            [NativeTypeName(""MyStruct::(anonymous struct at ClangUnsavedFile.h:10:9)"")]
+            [NativeTypeName(""__AnonymousRecord_ClangUnsavedFile_L10_C9"")]
             public _Anonymous_e__Struct Anonymous;
 
             public partial struct _Anonymous_e__Struct
@@ -1498,7 +1718,7 @@ struct example_s {
 
         public double b;
 
-        [NativeTypeName(""MyStruct::(anonymous struct at ClangUnsavedFile.h:7:5)"")]
+        [NativeTypeName(""__AnonymousRecord_ClangUnsavedFile_L7_C5"")]
         public _Anonymous_e__Struct Anonymous;
 
         public ref double a

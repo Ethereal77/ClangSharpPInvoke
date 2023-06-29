@@ -76,4 +76,8 @@ public enum PInvokeGeneratorConfigurationOptions : ulong
     GenerateDocIncludes = 1UL << 32,
 
     GenerateGuidMember = 1UL << 33,
+
+    GenerateLatestCode = 1UL << 34,
+
+    GenerateNativeBitfieldAttribute = 1UL << 35,
 }

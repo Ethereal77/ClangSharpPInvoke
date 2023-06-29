@@ -11,7 +11,7 @@ needing the native parts.
 Please refer to the original [repository](https://github.com/dotnet/clangsharp) for more information about ClangSharp,
 the tool, etc.
 
-Many thanks to Tanned Gooding and the .NET Foundation for this awesome tool.
+Many thanks to Tanner Gooding and the .NET Foundation for this awesome tool.
 
 **NOTE**: This repository does not accept any issues or PRs. If you want to contribute to ClangSharp or open an issue,
           do so on the original repository.
@@ -37,7 +37,7 @@ Licensed under the MIT License (MIT).
 See [LICENSE.md](LICENSE.md) in the repository root for more information.
 
 
-### Building Managed
+### Building
 
 ClangSharp requires the [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) and can be built simply with `dotnet build -c Release`.
 
@@ -57,7 +57,7 @@ This program will take a given set of C or C++ header files and generate C# bind
 
 The simplest and recommended setup is to install the generator as a .NET tool and then use response files:
 ```
-dotnet tool install --global ClangSharpPInvokeGenerator --version 15.0.0
+dotnet tool install --global ClangSharpPInvokeGenerator --version 16.0.0
 ClangSharpPInvokeGenerator @generate.rsp
 ```
 
@@ -120,8 +120,9 @@ The available configuration options (visible with `-c help`) are:
 Options:
   ?, h, help                             Show help and usage information for -c, --config
   compatible-codegen                     Bindings should be generated with .NET Standard 2.0 compatibility. Setting this disables preview code generation.
-  latest-codegen                         Bindings should be generated for the latest stable version of .NET/C#. This is currently .NET 6/C# 10.
-  preview-codegen                        Bindings should be generated for the latest preview version of .NET/C#. This is currently .NET 7/C# 11.
+  default-codegen                        Bindings should be generated for the current LTS version of .NET/C#. This is currently .NET 6/C# 10.
+  latest-codegen                         Bindings should be generated for the current STS version of .NET/C#. This is currently .NET 7/C# 11.
+  preview-codegen                        Bindings should be generated for the preview version of .NET/C#. This is currently .NET 8/C# 12.
   single-file                            Bindings should be generated to a single output file. This is the default.
   multi-file                             Bindings should be generated so there is approximately one type per file.
   unix-types                             Bindings should be generated assuming Unix defaults. This is the default on Unix platforms.

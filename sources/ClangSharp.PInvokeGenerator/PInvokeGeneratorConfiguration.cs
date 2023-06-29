@@ -15,6 +15,9 @@ public sealed class PInvokeGeneratorConfiguration
     private const string DefaultMethodPrefixToStripValue = "";
     private const string DefaultTestOutputLocationValue = "";
 
+    private readonly string _language;
+    private readonly string _languageStandard;
+
     private readonly string _defaultNamespace;
     private readonly string _headerText;
     private readonly string _libraryPath;
@@ -49,8 +52,11 @@ public sealed class PInvokeGeneratorConfiguration
 
     private PInvokeGeneratorConfigurationOptions _options;
 
-    public PInvokeGeneratorConfiguration(string defaultNamespace, string outputLocation, string? headerFile, PInvokeGeneratorOutputMode outputMode, PInvokeGeneratorConfigurationOptions options)
+    public PInvokeGeneratorConfiguration(string language, string languageStandard, string defaultNamespace, string outputLocation, string? headerFile, PInvokeGeneratorOutputMode outputMode, PInvokeGeneratorConfigurationOptions options)
     {
+        _language = language;
+        _languageStandard = languageStandard;
+
         if (string.IsNullOrWhiteSpace(defaultNamespace))
         {
             throw new ArgumentNullException(nameof(defaultNamespace));
@@ -105,6 +111,21 @@ public sealed class PInvokeGeneratorConfiguration
         else if (options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateCompatibleCode) && options.HasFlag(PInvokeGeneratorConfigurationOptions.GeneratePreviewCode))
         {
             throw new ArgumentOutOfRangeException(nameof(options));
+        }
+        else if (options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateCompatibleCode) && options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateLatestCode))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options));
+        }
+        else if (options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateLatestCode) && options.HasFlag(PInvokeGeneratorConfigurationOptions.GeneratePreviewCode))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options));
+        }
+
+        if (options.HasFlag(PInvokeGeneratorConfigurationOptions.GeneratePreviewCode))
+        {
+            // While users shouldn't have passed it in like this, we can simplify
+            // our own downstream checks be having preview also opt into "latest".
+            options |= PInvokeGeneratorConfigurationOptions.GenerateLatestCode;
         }
         _options = options;
 
@@ -205,11 +226,15 @@ public sealed class PInvokeGeneratorConfiguration
 
     public bool GenerateHelperTypes => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateHelperTypes);
 
+    public bool GenerateLatestCode => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateLatestCode);
+
     public bool GenerateMacroBindings => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateMacroBindings);
 
     public bool GenerateMarkerInterfaces => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateMarkerInterfaces);
 
     public bool GenerateMultipleFiles => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateMultipleFiles);
+
+    public bool GenerateNativeBitfieldAttribute => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateNativeBitfieldAttribute);
 
     public bool GenerateNativeInheritanceAttribute => _options.HasFlag(PInvokeGeneratorConfigurationOptions.GenerateNativeInheritanceAttribute);
 
@@ -294,6 +319,7 @@ public sealed class PInvokeGeneratorConfiguration
         init
         {
             AddRange(_nativeTypeNamesToStrip, value, StringExtensions.NormalizePath);
+            AddRange(_nativeTypeNamesToStrip, value, StringExtensions.NormalizeFullPath);
         }
     }
 
@@ -302,6 +328,10 @@ public sealed class PInvokeGeneratorConfiguration
     public PInvokeGeneratorOutputMode OutputMode => _outputMode;
 
     public string OutputLocation => _outputLocation;
+
+    public string Language => _language;
+
+    public string LanguageStandard => _languageStandard;
 
     [AllowNull]
     public IReadOnlyDictionary<string, string> RemappedNames
@@ -345,6 +375,7 @@ public sealed class PInvokeGeneratorConfiguration
         init
         {
             AddRange(_traversalNames, value, StringExtensions.NormalizePath);
+            AddRange(_traversalNames, value, StringExtensions.NormalizeFullPath);
         }
     }
 

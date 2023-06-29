@@ -302,6 +302,194 @@ struct MyStruct3
         return ValidateGeneratedXmlCompatibleWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
+    protected override Task BitfieldWithNativeBitfieldAttributeTestImpl()
+    {
+        var inputContents = @"struct MyStruct1
+{
+    unsigned int o0_b0_24 : 24;
+    unsigned int o4_b0_16 : 16;
+    unsigned int o4_b16_3 : 3;
+    int o4_b19_3 : 3;
+    unsigned char o8_b0_1 : 1;
+    int o12_b0_1 : 1;
+    int o12_b1_1 : 1;
+};
+
+struct MyStruct2
+{
+    unsigned int o0_b0_1 : 1;
+    int x;
+    unsigned int o8_b0_1 : 1;
+};
+
+struct MyStruct3
+{
+    unsigned int o0_b0_1 : 1;
+    unsigned int o0_b1_1 : 1;
+};
+";
+
+        var expectedOutputContents = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
+<bindings>
+  <namespace name=""ClangSharp.Test"">
+    <struct name=""MyStruct1"" access=""public"">
+      <field name=""_bitfield1"" access=""public"">
+        <attribute>NativeBitfield(""o0_b0_24"", offset: 0, length: 24)</attribute>
+        <type>uint</type>
+      </field>
+      <field name=""o0_b0_24"" access=""public"">
+        <type native=""unsigned int : 24"">uint</type>
+        <get>
+          <code>return <bitfieldName>_bitfield1</bitfieldName> &amp; 0x<bitwidthHexStringBacking>FFFFFFu</bitwidthHexStringBacking>;</code>
+        </get>
+        <set>
+          <code>
+            <bitfieldName>_bitfield1</bitfieldName> = (_bitfield1 &amp; ~0x<bitwidthHexStringBacking>FFFFFFu</bitwidthHexStringBacking>) | (value &amp; 0x<bitwidthHexString>FFFFFFu</bitwidthHexString>);</code>
+        </set>
+      </field>
+      <field name=""_bitfield2"" access=""public"">
+        <attribute>NativeBitfield(""o4_b0_16"", offset: 0, length: 16)</attribute>
+        <attribute>NativeBitfield(""o4_b16_3"", offset: 16, length: 3)</attribute>
+        <attribute>NativeBitfield(""o4_b19_3"", offset: 19, length: 3)</attribute>
+        <type>uint</type>
+      </field>
+      <field name=""o4_b0_16"" access=""public"">
+        <type native=""unsigned int : 16"">uint</type>
+        <get>
+          <code>return <bitfieldName>_bitfield2</bitfieldName> &amp; 0x<bitwidthHexStringBacking>FFFFu</bitwidthHexStringBacking>;</code>
+        </get>
+        <set>
+          <code>
+            <bitfieldName>_bitfield2</bitfieldName> = (_bitfield2 &amp; ~0x<bitwidthHexStringBacking>FFFFu</bitwidthHexStringBacking>) | (value &amp; 0x<bitwidthHexString>FFFFu</bitwidthHexString>);</code>
+        </set>
+      </field>
+      <field name=""o4_b16_3"" access=""public"">
+        <type native=""unsigned int : 3"">uint</type>
+        <get>
+          <code>return (<bitfieldName>_bitfield2</bitfieldName> &gt;&gt; <bitfieldOffset>16</bitfieldOffset>) &amp; 0x<bitwidthHexStringBacking>7u</bitwidthHexStringBacking>;</code>
+        </get>
+        <set>
+          <code>
+            <bitfieldName>_bitfield2</bitfieldName> = (_bitfield2 &amp; ~(0x<bitwidthHexStringBacking>7u</bitwidthHexStringBacking> &lt;&lt; <bitfieldOffset>16</bitfieldOffset>)) | ((value &amp; 0x<bitwidthHexString>7u</bitwidthHexString>) &lt;&lt; 16);</code>
+        </set>
+      </field>
+      <field name=""o4_b19_3"" access=""public"">
+        <type native=""int : 3"">int</type>
+        <get>
+          <code>return (<typeName>int</typeName>)((<bitfieldName>_bitfield2</bitfieldName> &gt;&gt; <bitfieldOffset>19</bitfieldOffset>) &amp; 0x<bitwidthHexStringBacking>7u</bitwidthHexStringBacking>);</code>
+        </get>
+        <set>
+          <code>
+            <bitfieldName>_bitfield2</bitfieldName> = (_bitfield2 &amp; ~(0x<bitwidthHexStringBacking>7u</bitwidthHexStringBacking> &lt;&lt; <bitfieldOffset>19</bitfieldOffset>)) | (uint)((value &amp; 0x<bitwidthHexString>7</bitwidthHexString>) &lt;&lt; 19);</code>
+        </set>
+      </field>
+      <field name=""_bitfield3"" access=""public"">
+        <attribute>NativeBitfield(""o8_b0_1"", offset: 0, length: 1)</attribute>
+        <type>byte</type>
+      </field>
+      <field name=""o8_b0_1"" access=""public"">
+        <type native=""unsigned char : 1"">byte</type>
+        <get>
+          <code>return (<typeName>byte</typeName>)(<bitfieldName>_bitfield3</bitfieldName> &amp; 0x<bitwidthHexStringBacking>1u</bitwidthHexStringBacking>);</code>
+        </get>
+        <set>
+          <code>
+            <bitfieldName>_bitfield3</bitfieldName> = (<typeNameBacking>byte</typeNameBacking>)((_bitfield3 &amp; ~0x<bitwidthHexStringBacking>1u</bitwidthHexStringBacking>) | (value &amp; 0x<bitwidthHexString>1u</bitwidthHexString>));</code>
+        </set>
+      </field>
+      <field name=""_bitfield4"" access=""public"">
+        <attribute>NativeBitfield(""o12_b0_1"", offset: 0, length: 1)</attribute>
+        <attribute>NativeBitfield(""o12_b1_1"", offset: 1, length: 1)</attribute>
+        <type>int</type>
+      </field>
+      <field name=""o12_b0_1"" access=""public"">
+        <type native=""int : 1"">int</type>
+        <get>
+          <code>return <bitfieldName>_bitfield4</bitfieldName> &amp; 0x<bitwidthHexStringBacking>1</bitwidthHexStringBacking>;</code>
+        </get>
+        <set>
+          <code>
+            <bitfieldName>_bitfield4</bitfieldName> = (_bitfield4 &amp; ~0x<bitwidthHexStringBacking>1</bitwidthHexStringBacking>) | (value &amp; 0x<bitwidthHexString>1</bitwidthHexString>);</code>
+        </set>
+      </field>
+      <field name=""o12_b1_1"" access=""public"">
+        <type native=""int : 1"">int</type>
+        <get>
+          <code>return (<bitfieldName>_bitfield4</bitfieldName> &gt;&gt; <bitfieldOffset>1</bitfieldOffset>) &amp; 0x<bitwidthHexStringBacking>1</bitwidthHexStringBacking>;</code>
+        </get>
+        <set>
+          <code>
+            <bitfieldName>_bitfield4</bitfieldName> = (_bitfield4 &amp; ~(0x<bitwidthHexStringBacking>1</bitwidthHexStringBacking> &lt;&lt; <bitfieldOffset>1</bitfieldOffset>)) | ((value &amp; 0x<bitwidthHexString>1</bitwidthHexString>) &lt;&lt; 1);</code>
+        </set>
+      </field>
+    </struct>
+    <struct name=""MyStruct2"" access=""public"">
+      <field name=""_bitfield1"" access=""public"">
+        <attribute>NativeBitfield(""o0_b0_1"", offset: 0, length: 1)</attribute>
+        <type>uint</type>
+      </field>
+      <field name=""o0_b0_1"" access=""public"">
+        <type native=""unsigned int : 1"">uint</type>
+        <get>
+          <code>return <bitfieldName>_bitfield1</bitfieldName> &amp; 0x<bitwidthHexStringBacking>1u</bitwidthHexStringBacking>;</code>
+        </get>
+        <set>
+          <code>
+            <bitfieldName>_bitfield1</bitfieldName> = (_bitfield1 &amp; ~0x<bitwidthHexStringBacking>1u</bitwidthHexStringBacking>) | (value &amp; 0x<bitwidthHexString>1u</bitwidthHexString>);</code>
+        </set>
+      </field>
+      <field name=""x"" access=""public"">
+        <type>int</type>
+      </field>
+      <field name=""_bitfield2"" access=""public"">
+        <attribute>NativeBitfield(""o8_b0_1"", offset: 0, length: 1)</attribute>
+        <type>uint</type>
+      </field>
+      <field name=""o8_b0_1"" access=""public"">
+        <type native=""unsigned int : 1"">uint</type>
+        <get>
+          <code>return <bitfieldName>_bitfield2</bitfieldName> &amp; 0x<bitwidthHexStringBacking>1u</bitwidthHexStringBacking>;</code>
+        </get>
+        <set>
+          <code>
+            <bitfieldName>_bitfield2</bitfieldName> = (_bitfield2 &amp; ~0x<bitwidthHexStringBacking>1u</bitwidthHexStringBacking>) | (value &amp; 0x<bitwidthHexString>1u</bitwidthHexString>);</code>
+        </set>
+      </field>
+    </struct>
+    <struct name=""MyStruct3"" access=""public"">
+      <field name=""_bitfield"" access=""public"">
+        <attribute>NativeBitfield(""o0_b0_1"", offset: 0, length: 1)</attribute>
+        <attribute>NativeBitfield(""o0_b1_1"", offset: 1, length: 1)</attribute>
+        <type>uint</type>
+      </field>
+      <field name=""o0_b0_1"" access=""public"">
+        <type native=""unsigned int : 1"">uint</type>
+        <get>
+          <code>return <bitfieldName>_bitfield</bitfieldName> &amp; 0x<bitwidthHexStringBacking>1u</bitwidthHexStringBacking>;</code>
+        </get>
+        <set>
+          <code>
+            <bitfieldName>_bitfield</bitfieldName> = (_bitfield &amp; ~0x<bitwidthHexStringBacking>1u</bitwidthHexStringBacking>) | (value &amp; 0x<bitwidthHexString>1u</bitwidthHexString>);</code>
+        </set>
+      </field>
+      <field name=""o0_b1_1"" access=""public"">
+        <type native=""unsigned int : 1"">uint</type>
+        <get>
+          <code>return (<bitfieldName>_bitfield</bitfieldName> &gt;&gt; <bitfieldOffset>1</bitfieldOffset>) &amp; 0x<bitwidthHexStringBacking>1u</bitwidthHexStringBacking>;</code>
+        </get>
+        <set>
+          <code>
+            <bitfieldName>_bitfield</bitfieldName> = (_bitfield &amp; ~(0x<bitwidthHexStringBacking>1u</bitwidthHexStringBacking> &lt;&lt; <bitfieldOffset>1</bitfieldOffset>)) | ((value &amp; 0x<bitwidthHexString>1u</bitwidthHexString>) &lt;&lt; 1);</code>
+        </set>
+      </field>
+    </struct>
+  </namespace>
+</bindings>
+";
+
+        return ValidateGeneratedXmlCompatibleWindowsBindingsAsync(inputContents, expectedOutputContents, PInvokeGeneratorConfigurationOptions.GenerateNativeBitfieldAttribute);
+    }
+
     protected override Task DeclTypeTestImpl()
     {
         var inputContents = @"extern ""C"" void MyFunction();
@@ -957,7 +1145,7 @@ struct MyStruct
         <type>{expectedManagedType}</type>
       </field>
       <field name=""Anonymous"" access=""public"">
-        <type native=""MyStruct::(anonymous struct at ClangUnsavedFile.h:10:5)"">_Anonymous_e__Struct</type>
+        <type native=""__AnonymousRecord_ClangUnsavedFile_L10_C5"">_Anonymous_e__Struct</type>
       </field>
       <field name=""z"" access=""public"">
         <type>ref {expectedManagedType}</type>
@@ -1009,7 +1197,7 @@ struct MyStruct
           <type>{expectedManagedType}</type>
         </field>
         <field name=""w"" access=""public"">
-          <type native=""struct (anonymous struct at ClangUnsavedFile.h:14:9)"">_w_e__Struct</type>
+          <type native=""__AnonymousRecord_ClangUnsavedFile_L14_C9"">_w_e__Struct</type>
         </field>
         <field name=""u"" access=""public"">
           <type>MyUnion</type>
@@ -1092,7 +1280,7 @@ struct MyStruct
         <type>int</type>
       </field>
       <field name=""Anonymous"" access=""public"">
-        <type native=""MyStruct::(anonymous struct at ClangUnsavedFile.h:6:5)"">_Anonymous_e__Struct</type>
+        <type native=""__AnonymousRecord_ClangUnsavedFile_L6_C5"">_Anonymous_e__Struct</type>
       </field>
       <field name=""z"" access=""public"">
         <type>ref int</type>
@@ -1135,7 +1323,7 @@ struct MyStruct
           <type>int</type>
         </field>
         <field name=""Anonymous"" access=""public"">
-          <type native=""MyStruct::(anonymous struct at ClangUnsavedFile.h:10:9)"">_Anonymous_e__Struct</type>
+          <type native=""__AnonymousRecord_ClangUnsavedFile_L10_C9"">_Anonymous_e__Struct</type>
         </field>
         <struct name=""_Anonymous_e__Struct"" access=""public"">
           <field name=""w"" access=""public"">
@@ -1490,7 +1678,7 @@ struct example_s {
         <type>double</type>
       </field>
       <field name=""Anonymous"" access=""public"">
-        <type native=""MyStruct::(anonymous struct at ClangUnsavedFile.h:7:5)"">_Anonymous_e__Struct</type>
+        <type native=""__AnonymousRecord_ClangUnsavedFile_L7_C5"">_Anonymous_e__Struct</type>
       </field>
       <field name=""a"" access=""public"">
         <type>ref double</type>
