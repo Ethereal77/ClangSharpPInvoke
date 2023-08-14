@@ -34,18 +34,9 @@ internal partial class XmlOutputBuilder
 
     public void BeginValue(in ValueDesc desc)
     {
-        if (desc.Kind == ValueKind.Enumerator)
-        {
-            _ = _sb.Append("<enumerator");
-        }
-        else if (desc.IsConstant)
-        {
-            _ = _sb.Append("<constant");
-        }
-        else
-        {
-            _ = _sb.Append("<field");
-        }
+        _ = (desc.Kind is ValueKind.Enumerator) ? _sb.Append("<enumerator")
+          : desc.IsConstant ? _sb.Append("<constant")
+          : _sb.Append("<field");
 
         _ = _sb.Append($" name=\"{desc.EscapedName}\" access=\"{desc.AccessSpecifier.AsString()}\">");
 
@@ -70,18 +61,9 @@ internal partial class XmlOutputBuilder
             _ = _sb.Append("</value>");
         }
 
-        if (desc.Kind == ValueKind.Enumerator)
-        {
-            _ = _sb.Append("</enumerator>");
-        }
-        else if (desc.IsConstant)
-        {
-            _ = _sb.Append("</constant>");
-        }
-        else
-        {
-            _ = _sb.Append("</field>");
-        }
+        _ = (desc.Kind is ValueKind.Enumerator) ? _sb.Append("</enumerator>")
+          : desc.IsConstant ? _sb.Append("</constant>")
+          : _sb.Append("</field>");
     }
 
     public void BeginEnum(in EnumDesc desc)
@@ -350,9 +332,10 @@ internal partial class XmlOutputBuilder
         _ = _sb.Append("</code>");
     }
 
-    public void BeginGetter(bool aggressivelyInlined)
+    public void BeginGetter(bool aggressivelyInlined, bool isReadOnly)
     {
         _ = _sb.Append("<get");
+
         if (aggressivelyInlined)
         {
             _ = _sb.Append(" inlining=\"aggressive\"");

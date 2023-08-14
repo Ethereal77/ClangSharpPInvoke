@@ -173,7 +173,7 @@ union MyUnion3
       <field name=""o4_b19_3"" access=""public"">
         <type native=""int : 3"">int</type>
         <get>
-          <code>return (<typeName>int</typeName>)((<bitfieldName>_bitfield2</bitfieldName> &gt;&gt; <bitfieldOffset>19</bitfieldOffset>) &amp; 0x<bitwidthHexStringBacking>7u</bitwidthHexStringBacking>);</code>
+          <code>return (<typeName>int</typeName>)(<bitfieldName>_bitfield2</bitfieldName> &lt;&lt; <remainingBitsMinusBitWidth>10</remainingBitsMinusBitWidth>) &gt;&gt; <currentSizeMinusBitWidth>29</currentSizeMinusBitWidth>;</code>
         </get>
         <set>
           <code>
@@ -193,7 +193,7 @@ union MyUnion3
       <field name=""o12_b0_1"" access=""public"">
         <type native=""int : 1"">int</type>
         <get>
-          <code>return (<typeName>int</typeName>)((<bitfieldName>_bitfield2</bitfieldName> &gt;&gt; <bitfieldOffset>23</bitfieldOffset>) &amp; 0x<bitwidthHexStringBacking>1u</bitwidthHexStringBacking>);</code>
+          <code>return (<typeName>int</typeName>)(<bitfieldName>_bitfield2</bitfieldName> &lt;&lt; <remainingBitsMinusBitWidth>8</remainingBitsMinusBitWidth>) &gt;&gt; <currentSizeMinusBitWidth>31</currentSizeMinusBitWidth>;</code>
         </get>
         <set>
           <code>
@@ -203,7 +203,7 @@ union MyUnion3
       <field name=""o12_b1_1"" access=""public"">
         <type native=""int : 1"">int</type>
         <get>
-          <code>return (<typeName>int</typeName>)((<bitfieldName>_bitfield2</bitfieldName> &gt;&gt; <bitfieldOffset>24</bitfieldOffset>) &amp; 0x<bitwidthHexStringBacking>1u</bitwidthHexStringBacking>);</code>
+          <code>return (<typeName>int</typeName>)(<bitfieldName>_bitfield2</bitfieldName> &lt;&lt; <remainingBitsMinusBitWidth>7</remainingBitsMinusBitWidth>) &gt;&gt; <currentSizeMinusBitWidth>31</currentSizeMinusBitWidth>;</code>
         </get>
         <set>
           <code>
@@ -278,9 +278,7 @@ union MyUnion3
     {
         var inputContents = "typedef union MyUnion MyUnion;";
         var expectedOutputContents = string.Empty;
-
-        var excludedNames = new string[] { "MyUnion" };
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents, excludedNames: excludedNames);
+        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents, excludedNames: ExcludeTestExcludedNames);
     }
 
     protected override Task FixedSizedBufferNonPrimitiveTestImpl(string nativeType, string expectedManagedType)
@@ -734,8 +732,7 @@ union DECLSPEC_UUID(""00000000-0000-0000-C000-000000000047"") MyUnion2
 </bindings>
 ";
 
-        var excludedNames = new string[] { "DECLSPEC_UUID" };
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents, excludedNames: excludedNames);
+        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents, excludedNames: GuidTestExcludedNames);
     }
 
     protected override Task NestedAnonymousTestImpl(string nativeType, string expectedManagedType, int line, int column)
@@ -900,7 +897,7 @@ union MyUnion
           <field name=""o0_b0_16"" access=""public"">
             <type native=""int : 16"">int</type>
             <get>
-              <code>return <bitfieldName>_bitfield</bitfieldName> &amp; 0x<bitwidthHexStringBacking>FFFF</bitwidthHexStringBacking>;</code>
+              <code>return (<bitfieldName>_bitfield</bitfieldName> &lt;&lt; <remainingBitsMinusBitWidth>16</remainingBitsMinusBitWidth>) &gt;&gt; <currentSizeMinusBitWidth>16</currentSizeMinusBitWidth>;</code>
             </get>
             <set>
               <code>
@@ -910,7 +907,7 @@ union MyUnion
           <field name=""o0_b16_4"" access=""public"">
             <type native=""int : 4"">int</type>
             <get>
-              <code>return (<bitfieldName>_bitfield</bitfieldName> &gt;&gt; <bitfieldOffset>16</bitfieldOffset>) &amp; 0x<bitwidthHexStringBacking>F</bitwidthHexStringBacking>;</code>
+              <code>return (<bitfieldName>_bitfield</bitfieldName> &lt;&lt; <remainingBitsMinusBitWidth>12</remainingBitsMinusBitWidth>) &gt;&gt; <currentSizeMinusBitWidth>28</currentSizeMinusBitWidth>;</code>
             </get>
             <set>
               <code>

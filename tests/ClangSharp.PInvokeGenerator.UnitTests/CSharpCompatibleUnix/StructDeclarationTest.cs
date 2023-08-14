@@ -193,7 +193,7 @@ struct MyStruct3
         {
             get
             {
-                return (int)((_bitfield2 >> 19) & 0x7u);
+                return (int)(_bitfield2 << 10) >> 29;
             }
 
             set
@@ -221,7 +221,7 @@ struct MyStruct3
         {
             get
             {
-                return (int)((_bitfield2 >> 23) & 0x1u);
+                return (int)(_bitfield2 << 8) >> 31;
             }
 
             set
@@ -235,7 +235,7 @@ struct MyStruct3
         {
             get
             {
-                return (int)((_bitfield2 >> 24) & 0x1u);
+                return (int)(_bitfield2 << 7) >> 31;
             }
 
             set
@@ -409,7 +409,7 @@ struct MyStruct3
         {
             get
             {
-                return (int)((_bitfield2 >> 19) & 0x7u);
+                return (int)(_bitfield2 << 10) >> 29;
             }
 
             set
@@ -437,7 +437,7 @@ struct MyStruct3
         {
             get
             {
-                return (int)((_bitfield2 >> 23) & 0x1u);
+                return (int)(_bitfield2 << 8) >> 31;
             }
 
             set
@@ -451,7 +451,7 @@ struct MyStruct3
         {
             get
             {
-                return (int)((_bitfield2 >> 24) & 0x1u);
+                return (int)(_bitfield2 << 7) >> 31;
             }
 
             set
@@ -575,9 +575,7 @@ namespace ClangSharp.Test
     {
         var inputContents = "typedef struct MyStruct MyStruct;";
         var expectedOutputContents = string.Empty;
-
-        var excludedNames = new string[] { "MyStruct" };
-        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents, excludedNames: excludedNames);
+        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents, excludedNames: ExcludeTestExcludedNames);
     }
 
     protected override Task FixedSizedBufferNonPrimitiveTestImpl(string nativeType, string expectedManagedType)
@@ -962,8 +960,7 @@ namespace ClangSharp.Test
 }}
 ";
 
-        var excludedNames = new string[] { "DECLSPEC_UUID" };
-        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents, excludedNames: excludedNames);
+        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents, excludedNames: GuidTestExcludedNames);
     }
 
     protected override Task InheritanceTestImpl()
@@ -1395,7 +1392,7 @@ namespace ClangSharp.Test
                 {
                     get
                     {
-                        return _bitfield & 0xFFFF;
+                        return (_bitfield << 16) >> 16;
                     }
 
                     set
@@ -1409,7 +1406,7 @@ namespace ClangSharp.Test
                 {
                     get
                     {
-                        return (_bitfield >> 16) & 0xF;
+                        return (_bitfield << 12) >> 28;
                     }
 
                     set
