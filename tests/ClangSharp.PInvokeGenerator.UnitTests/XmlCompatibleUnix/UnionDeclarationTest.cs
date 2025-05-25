@@ -1,12 +1,13 @@
 // Copyright (c) .NET Foundation and Contributors. All Rights Reserved. Licensed under the MIT License (MIT). See License.md in the repository root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace ClangSharp.UnitTests;
 
+[Platform("unix")]
 public sealed class XmlCompatibleUnix_UnionDeclarationTest : UnionDeclarationTest
 {
     protected override Task BasicTestImpl(string nativeType, string expectedManagedType)
@@ -67,7 +68,7 @@ public sealed class XmlCompatibleUnix_UnionDeclarationTest : UnionDeclarationTes
   </namespace>
 </bindings>
 ";
-        return ValidateGeneratedXmlCompatibleUnixBindingsAsync(inputContents, expectedOutputContents, commandlineArgs: Array.Empty<string>());
+        return ValidateGeneratedXmlCompatibleUnixBindingsAsync(inputContents, expectedOutputContents, commandLineArgs: []);
     }
 
     protected override Task BasicWithNativeTypeNameTestImpl(string nativeType, string expectedManagedType)
@@ -845,7 +846,7 @@ union MyUnion
         var expectedOutputContents = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
 <bindings>
   <namespace name=""ClangSharp.Test"">
-    <struct name=""MyUnion"" access=""public"" layout=""Explicit"">
+    <struct name=""MyUnion"" access=""public"" unsafe=""true"" layout=""Explicit"">
       <field name=""x"" access=""public"" offset=""0"">
         <type>int</type>
       </field>
@@ -867,7 +868,7 @@ union MyUnion
       <field name=""w"" access=""public"">
         <type>ref int</type>
         <get>
-          <code>fixed (_Anonymous_e__Union._Anonymous_e__Union* pField = &amp;Anonymous.Anonymous)
+          <code>fixed (_Anonymous_e__Union._Anonymous_1_e__Union* pField = &amp;Anonymous.Anonymous_1)
     {
         return ref pField-&gt;w;
     }</code>
@@ -876,29 +877,29 @@ union MyUnion
       <field name=""o0_b0_16"" access=""public"">
         <type>int</type>
         <get>
-          <code>return Anonymous.Anonymous.o0_b0_16;</code>
+          <code>return Anonymous.Anonymous_1.o0_b0_16;</code>
         </get>
         <set>
-          <code>Anonymous.Anonymous.o0_b0_16 = value;</code>
+          <code>Anonymous.Anonymous_1.o0_b0_16 = value;</code>
         </set>
       </field>
       <field name=""o0_b16_4"" access=""public"">
         <type>int</type>
         <get>
-          <code>return Anonymous.Anonymous.o0_b16_4;</code>
+          <code>return Anonymous.Anonymous_1.o0_b16_4;</code>
         </get>
         <set>
-          <code>Anonymous.Anonymous.o0_b16_4 = value;</code>
+          <code>Anonymous.Anonymous_1.o0_b16_4 = value;</code>
         </set>
       </field>
-      <struct name=""_Anonymous_e__Union"" access=""public"" layout=""Explicit"">
+      <struct name=""_Anonymous_e__Union"" access=""public"" unsafe=""true"" layout=""Explicit"">
         <field name=""z"" access=""public"" offset=""0"">
           <type>int</type>
         </field>
-        <field name=""Anonymous"" access=""public"" offset=""0"">
-          <type native=""__AnonymousRecord_ClangUnsavedFile_L10_C9"">_Anonymous_e__Union</type>
+        <field name=""Anonymous_1"" access=""public"" offset=""0"">
+          <type native=""__AnonymousRecord_ClangUnsavedFile_L10_C9"">_Anonymous_1_e__Union</type>
         </field>
-        <struct name=""_Anonymous_e__Union"" access=""public"" layout=""Explicit"">
+        <struct name=""_Anonymous_1_e__Union"" access=""public"" layout=""Explicit"">
           <field name=""w"" access=""public"" offset=""0"">
             <type>int</type>
           </field>
@@ -1187,7 +1188,7 @@ union example_s {
         var expectedOutputContents = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
 <bindings>
   <namespace name=""ClangSharp.Test"">
-    <struct name=""MyUnion"" access=""public"" layout=""Explicit"">
+    <struct name=""MyUnion"" access=""public"" unsafe=""true"" layout=""Explicit"">
       <field name=""r"" access=""public"" offset=""0"">
         <type>double</type>
       </field>
@@ -1334,6 +1335,120 @@ union MyUnion
       <field name=""b"" access=""public"" offset=""0"">
         <type native=""MyTypedefAlias"">{expectedManagedType}</type>
       </field>
+    </struct>
+  </namespace>
+</bindings>
+";
+
+        return ValidateGeneratedXmlCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
+    }
+
+    protected override Task UnionWithAnonStructWithAnonUnionImpl()
+    {
+        var inputContents = $@"typedef union _MY_UNION
+{{
+    long AsArray[2];
+    struct
+    {{
+        long First;
+        union
+        {{
+            struct
+            {{
+                long Second;
+            }} A;
+
+            struct
+            {{
+                long Second;
+            }} B;
+        }};
+    }};
+}} MY_UNION;";
+
+        var expectedOutputContents = $@"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
+<bindings>
+  <namespace name=""ClangSharp.Test"">
+    <struct name=""_MY_UNION"" access=""public"" unsafe=""true"" layout=""Explicit"">
+      <field name=""AsArray"" access=""public"" offset=""0"">
+        <type native=""long[2]"" count=""2"" fixed=""_AsArray_e__FixedBuffer"">IntPtr</type>
+      </field>
+      <field name=""Anonymous"" access=""public"" offset=""0"">
+        <type native=""__AnonymousRecord_ClangUnsavedFile_L4_C5"">_Anonymous_e__Struct</type>
+      </field>
+      <field name=""First"" access=""public"">
+        <type>ref IntPtr</type>
+        <get>
+          <code>fixed (_Anonymous_e__Struct* pField = &amp;Anonymous)
+    {{
+        return ref pField-&gt;First;
+    }}</code>
+        </get>
+      </field>
+      <field name=""A"" access=""public"">
+        <type>ref _Anonymous_e__Struct._Anonymous_1_e__Union._A_e__Struct</type>
+        <get>
+          <code>fixed (_Anonymous_e__Struct._Anonymous_1_e__Union* pField = &amp;Anonymous.Anonymous_1)
+    {{
+        return ref pField-&gt;A;
+    }}</code>
+        </get>
+      </field>
+      <field name=""B"" access=""public"">
+        <type>ref _Anonymous_e__Struct._Anonymous_1_e__Union._B_e__Struct</type>
+        <get>
+          <code>fixed (_Anonymous_e__Struct._Anonymous_1_e__Union* pField = &amp;Anonymous.Anonymous_1)
+    {{
+        return ref pField-&gt;B;
+    }}</code>
+        </get>
+      </field>
+      <struct name=""_Anonymous_e__Struct"" access=""public"" unsafe=""true"">
+        <field name=""First"" access=""public"">
+          <type native=""long"">IntPtr</type>
+        </field>
+        <field name=""Anonymous_1"" access=""public"">
+          <type native=""__AnonymousRecord_ClangUnsavedFile_L7_C9"">_Anonymous_1_e__Union</type>
+        </field>
+        <struct name=""_Anonymous_1_e__Union"" access=""public"" unsafe=""true"" layout=""Explicit"">
+          <field name=""A"" access=""public"" offset=""0"">
+            <type native=""__AnonymousRecord_ClangUnsavedFile_L9_C13"">_A_e__Struct</type>
+          </field>
+          <field name=""B"" access=""public"" offset=""0"">
+            <type native=""__AnonymousRecord_ClangUnsavedFile_L14_C13"">_B_e__Struct</type>
+          </field>
+          <struct name=""_A_e__Struct"" access=""public"">
+            <field name=""Second"" access=""public"">
+              <type native=""long"">IntPtr</type>
+            </field>
+          </struct>
+          <struct name=""_B_e__Struct"" access=""public"">
+            <field name=""Second"" access=""public"">
+              <type native=""long"">IntPtr</type>
+            </field>
+          </struct>
+        </struct>
+      </struct>
+      <struct name=""_AsArray_e__FixedBuffer"" access=""public"">
+        <field name=""e0"" access=""public"">
+          <type>IntPtr</type>
+        </field>
+        <field name=""e1"" access=""public"">
+          <type>IntPtr</type>
+        </field>
+        <indexer access=""public"" unsafe=""true"">
+          <type>ref IntPtr</type>
+          <param name=""index"">
+            <type>int</type>
+          </param>
+          <get>
+            <code>fixed (IntPtr* pThis = &amp;e0)
+    {{
+        return ref pThis[index];
+    }}</code>
+          </get>
+        </indexer>
+      </struct>
     </struct>
   </namespace>
 </bindings>

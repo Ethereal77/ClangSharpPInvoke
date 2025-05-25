@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation and Contributors. All Rights Reserved. Licensed under the MIT License (MIT). See License.md in the repository root for more information.
 
+using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using ClangSharp.Abstractions;
 using ClangSharp.Interop;
 
@@ -31,7 +31,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
 
     public void BeginValue(in ValueDesc desc)
     {
-        if (_config.GenerateDocIncludes && (desc.Kind == ValueKind.Enumerator))
+        if (_generator.Config.GenerateDocIncludes && (desc.Kind == ValueKind.Enumerator))
         {
             WriteIndented("/// <include file='");
             Write(desc.ParentName);
@@ -63,7 +63,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
         }
         else if (desc.IsConstant)
         {
-            if (_config.GenerateUnmanagedConstants && (desc.Kind != ValueKind.Enumerator))
+            if (_generator.Config.GenerateUnmanagedConstants && (desc.Kind != ValueKind.Enumerator))
             {
                 if (desc.IsCopy)
                 {
@@ -88,7 +88,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
                 {
                     Write(" static ");
 
-                    if (!_config.GenerateUnmanagedConstants)
+                    if (!_generator.Config.GenerateUnmanagedConstants)
                     {
                         Write("readonly ");
                     }
@@ -111,7 +111,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
             Write(GetAccessSpecifierString(desc.AccessSpecifier, isNested: true));
             Write(" static ");
 
-            if (_config.GenerateUnmanagedConstants && desc.IsConstant)
+            if (_generator.Config.GenerateUnmanagedConstants && desc.IsConstant)
             {
                 if (desc.IsArray)
                 {
@@ -177,7 +177,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
             {
                 WriteNewline();
                 WriteBlockStart();
-                BeginGetter(desc.IsConstant && _config.GenerateAggressiveInlining, isReadOnly: false);
+                BeginGetter(desc.IsConstant && _generator.Config.GenerateAggressiveInlining, isReadOnly: false);
             }
             else
             {
@@ -203,7 +203,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
             {
                 WriteLine(',');
 
-                if (_config.GenerateDocIncludes)
+                if (_generator.Config.GenerateDocIncludes)
                 {
                     NeedsNewline = true;
                 }
@@ -214,7 +214,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
             {
                 if (desc.IsConstant)
                 {
-                    if (_config.GenerateUnmanagedConstants && !desc.IsCopy)
+                    if (_generator.Config.GenerateUnmanagedConstants && !desc.IsCopy)
                     {
                         EndGetter();
                         WriteBlockEnd();
@@ -244,7 +244,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
 
     public void BeginEnum(in EnumDesc desc)
     {
-        if (_config.GenerateDocIncludes)
+        if (_generator.Config.GenerateDocIncludes)
         {
             WriteIndented("/// <include file='");
             Write(desc.EscapedName);
@@ -269,7 +269,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
         Write(" enum ");
         Write(desc.EscapedName);
 
-        if (!desc.TypeName.Equals("int"))
+        if (!desc.TypeName.Equals("int", StringComparison.Ordinal))
         {
             Write(" : ");
             Write(desc.TypeName);
@@ -283,7 +283,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
 
     public void BeginField(in FieldDesc desc)
     {
-        if (_config.GenerateDocIncludes && !string.IsNullOrWhiteSpace(desc.ParentName))
+        if (_generator.Config.GenerateDocIncludes && !string.IsNullOrWhiteSpace(desc.ParentName))
         {
             WriteIndented("/// <include file='");
             Write(desc.ParentName);
@@ -327,7 +327,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
 
     public void WriteFixedCountField(string typeName, string escapedName, string fixedName, string count)
     {
-        if (PInvokeGenerator.IsSupportedFixedSizedBufferType(typeName))
+        if (_generator.IsSupportedFixedSizedBufferType(typeName))
         {
             Write("fixed ");
             Write(typeName);
@@ -364,7 +364,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
 
     public void BeginFunctionOrDelegate(in FunctionOrDelegateDesc desc, ref bool isMethodClassUnsafe)
     {
-        if (_config.GenerateDocIncludes && !string.IsNullOrEmpty(desc.ParentName))
+        if (_generator.Config.GenerateDocIncludes && !string.IsNullOrEmpty(desc.ParentName))
         {
             if (desc.IsInherited)
             {
@@ -372,6 +372,12 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
                 Write(desc.ParentName);
                 Write('.');
                 Write(desc.EscapedName);
+                if (desc.ParameterTypes is not null)
+                {
+                    Write('(');
+                    Write(string.Join(", ", desc.ParameterTypes));
+                    Write(')');
+                }
                 WriteLine("\" />");
             }
             else
@@ -393,7 +399,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
             AddUsingDirective("System.Runtime.InteropServices");
             WriteIndented("[UnmanagedFunctionPointer");
 
-            if (desc.CallingConvention != CallingConvention.Winapi)
+            if (desc.CallingConvention != CallConv.Winapi)
             {
                 Write("(CallingConvention.");
                 Write(desc.CallingConvention);
@@ -414,7 +420,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
 
             Write(", ");
 
-            if (desc.CallingConvention != CallingConvention.Winapi)
+            if (desc.CallingConvention != CallConv.Winapi)
             {
                 Write("CallingConvention = CallingConvention.");
                 Write(desc.CallingConvention);
@@ -430,7 +436,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
 
             Write("ExactSpelling = true");
 
-            if (desc.SetLastError && !_config.GenerateSetsLastSystemErrorAttribute)
+            if (desc.SetLastError && !_generator.Config.GenerateSetsLastSystemErrorAttribute)
             {
                 Write(", SetLastError = true");
             }
@@ -443,7 +449,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
             WriteSourceLocation(location, false);
         }
 
-        if (desc.SetLastError && _config.GenerateSetsLastSystemErrorAttribute)
+        if (desc.SetLastError && _generator.Config.GenerateSetsLastSystemErrorAttribute)
         {
             WriteIndentedLine("[SetsLastSystemError]");
         }
@@ -568,7 +574,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
         {
             Write("delegate* unmanaged");
 
-            if (desc.CallingConvention != CallingConvention.Winapi)
+            if (desc.CallingConvention != CallConv.Winapi)
             {
                 Write('[');
                 Write(desc.CallingConvention);
@@ -654,7 +660,8 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
     public void BeginConstructorInitializer(string memberRefName, string memberInitName)
     {
         WriteIndentation();
-        if (memberRefName.Equals(memberInitName))
+
+        if (memberRefName.Equals(memberInitName, StringComparison.Ordinal))
         {
             Write("this");
             Write('.');
@@ -731,7 +738,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
 
     public void BeginStruct(in StructDesc desc)
     {
-        if (_config.GenerateDocIncludes)
+        if (_generator.Config.GenerateDocIncludes)
         {
             WriteIndented("/// <include file='");
             Write(desc.EscapedName);
@@ -792,7 +799,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
         Write("partial struct ");
         Write(desc.EscapedName);
 
-        if (_config.GenerateMarkerInterfaces)
+        if (_generator.Config.GenerateMarkerInterfaces)
         {
             if (desc.HasVtbl)
             {
@@ -801,7 +808,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
                 Write(".Interface");
             }
 
-            if ((desc.Uuid is not null) && _config.GenerateGuidMember && _config.GenerateLatestCode)
+            if ((desc.Uuid is not null) && _generator.Config.GenerateGuidMember && _generator.Config.GenerateLatestCode)
             {
                 Write(desc.HasVtbl ? ", " : " : ");
                 Write("INativeGuid");
@@ -839,7 +846,7 @@ internal partial class CSharpOutputBuilder : IOutputBuilder
     {
         WriteIndented("public partial struct Vtbl");
 
-        if (_config.GenerateMarkerInterfaces && !_config.ExcludeFnptrCodegen)
+        if (_generator.Config.GenerateMarkerInterfaces && !_generator.Config.ExcludeFnptrCodegen)
         {
             WriteLine("<TSelf>");
             IncreaseIndentation();

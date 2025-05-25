@@ -3,9 +3,11 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace ClangSharp.UnitTests;
 
+[Platform("unix")]
 public sealed class XmlLatestUnix_CXXMethodDeclarationTest : CXXMethodDeclarationXmlTest
 {
     protected override Task ConstructorTestImpl()
@@ -163,6 +165,48 @@ public sealed class XmlLatestUnix_CXXMethodDeclarationTest : CXXMethodDeclaratio
         return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
+    protected override Task DefaultParameterInheritedFromTemplateTestImpl()
+    {
+        // NOTE: This is a regression test where a struct inherits a function from a template with a default parameter.
+        const string InputContents = @"template <typename T>
+struct MyTemplate
+{
+    int* DoWork(int* value = nullptr)
+    {
+        return value;
+    }
+};
+
+struct MyStruct : public MyTemplate<int>
+{};
+";
+
+        var entryPoint = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "__ZN8$MyTemplateDoWorkEv" : "_ZN10MyTemplateIiE6DoWorkEPi";
+
+        var expectedOutputContents = $@"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
+<bindings>
+  <namespace name=""ClangSharp.Test"">
+    <struct name=""MyStruct"" access=""public"" native=""struct MyStruct : MyTemplate&lt;int&gt;"" unsafe=""true"">
+      <function name=""DoWork"" access=""public"" lib=""ClangSharpPInvokeGenerator"" convention=""ThisCall"" entrypoint=""{entryPoint}"" static=""true"" unsafe=""true"">
+        <type>int*</type>
+        <param name=""pThis"">
+          <type>MyStruct*</type>
+        </param>
+        <param name=""value"">
+          <type>int*</type>
+          <init>
+            <code>null</code>
+          </init>
+        </param>
+      </function>
+    </struct>
+  </namespace>
+</bindings>
+";
+
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(InputContents, expectedOutputContents);
+    }
+
     protected override Task DestructorTestImpl()
     {
         var inputContents = @"struct MyStruct
@@ -210,14 +254,9 @@ public sealed class XmlLatestUnix_CXXMethodDeclarationTest : CXXMethodDeclaratio
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            if (!Environment.Is64BitProcess)
-            {
-                entryPoint = "?MyVoidMethod@MyStruct@@QAEXXZ";
-            }
-            else
-            {
-                entryPoint = "?MyVoidMethod@MyStruct@@QEAAXXZ";
-            }
+            entryPoint = Environment.Is64BitProcess
+                       ? "?MyVoidMethod@MyStruct@@QEAAXXZ"
+                       : "?MyVoidMethod@MyStruct@@QAEXXZ";
         }
 
         var expectedOutputContents = $@"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
@@ -481,14 +520,11 @@ int MyFunctionB(MyStruct* x)
       </field>
       <function name=""GetType"" access=""public"" unsafe=""true"">
         <type>int</type>
-        <param name=""objA"">
-          <type>int</type>
-        </param>
-        <param name=""objB"">
+        <param name=""obj"">
           <type>int</type>
         </param>
         <body>
-          <code>return ((delegate* unmanaged[Thiscall]&lt;MyStruct*, int, int, int&gt;)(lpVtbl[<vtbl explicit=""False"">0</vtbl>]))(<param special=""thisPtr"">(MyStruct*)Unsafe.AsPointer(ref this)</param>, <param name=""objA"">objA</param>, <param name=""objB"">objB</param>);</code>
+          <code>return ((delegate* unmanaged[Thiscall]&lt;MyStruct*, int, int&gt;)(lpVtbl[<vtbl explicit=""False"">0</vtbl>]))(<param special=""thisPtr"">(MyStruct*)Unsafe.AsPointer(ref this)</param>, <param name=""obj"">obj</param>);</code>
         </body>
       </function>
       <function name=""GetType"" access=""public"" unsafe=""true"">
@@ -499,11 +535,14 @@ int MyFunctionB(MyStruct* x)
       </function>
       <function name=""GetType"" access=""public"" unsafe=""true"">
         <type>int</type>
-        <param name=""obj"">
+        <param name=""objA"">
+          <type>int</type>
+        </param>
+        <param name=""objB"">
           <type>int</type>
         </param>
         <body>
-          <code>return ((delegate* unmanaged[Thiscall]&lt;MyStruct*, int, int&gt;)(lpVtbl[<vtbl explicit=""False"">2</vtbl>]))(<param special=""thisPtr"">(MyStruct*)Unsafe.AsPointer(ref this)</param>, <param name=""obj"">obj</param>);</code>
+          <code>return ((delegate* unmanaged[Thiscall]&lt;MyStruct*, int, int, int&gt;)(lpVtbl[<vtbl explicit=""False"">2</vtbl>]))(<param special=""thisPtr"">(MyStruct*)Unsafe.AsPointer(ref this)</param>, <param name=""objA"">objA</param>, <param name=""objB"">objB</param>);</code>
         </body>
       </function>
     </struct>
@@ -539,14 +578,11 @@ int MyFunctionB(MyStruct* x)
       </field>
       <function name=""GetType"" access=""public"" unsafe=""true"">
         <type>int</type>
-        <param name=""objA"">
-          <type>int</type>
-        </param>
-        <param name=""objB"">
+        <param name=""obj"">
           <type>int</type>
         </param>
         <body>
-          <code>return lpVtbl-&gt;<vtbl explicit=""True"">GetType</vtbl>(<param special=""thisPtr"">(MyStruct*)Unsafe.AsPointer(ref this)</param>, <param name=""objA"">objA</param>, <param name=""objB"">objB</param>);</code>
+          <code>return lpVtbl-&gt;<vtbl explicit=""True"">GetType</vtbl>(<param special=""thisPtr"">(MyStruct*)Unsafe.AsPointer(ref this)</param>, <param name=""obj"">obj</param>);</code>
         </body>
       </function>
       <function name=""GetType"" access=""public"" unsafe=""true"">
@@ -557,22 +593,25 @@ int MyFunctionB(MyStruct* x)
       </function>
       <function name=""GetType"" access=""public"" unsafe=""true"">
         <type>int</type>
-        <param name=""obj"">
+        <param name=""objA"">
+          <type>int</type>
+        </param>
+        <param name=""objB"">
           <type>int</type>
         </param>
         <body>
-          <code>return lpVtbl-&gt;<vtbl explicit=""True"">GetType2</vtbl>(<param special=""thisPtr"">(MyStruct*)Unsafe.AsPointer(ref this)</param>, <param name=""obj"">obj</param>);</code>
+          <code>return lpVtbl-&gt;<vtbl explicit=""True"">GetType2</vtbl>(<param special=""thisPtr"">(MyStruct*)Unsafe.AsPointer(ref this)</param>, <param name=""objA"">objA</param>, <param name=""objB"">objB</param>);</code>
         </body>
       </function>
       <vtbl>
         <field name=""GetType"" access=""public"">
-          <type native=""int (int, int){nativeCallConv}"">delegate* unmanaged[Thiscall]&lt;MyStruct*, int, int, int&gt;</type>
+          <type native=""int (int){nativeCallConv}"">delegate* unmanaged[Thiscall]&lt;MyStruct*, int, int&gt;</type>
         </field>
         <field name=""GetType1"" access=""public"">
           <type native=""int (){nativeCallConv}"">delegate* unmanaged[Thiscall]&lt;MyStruct*, int&gt;</type>
         </field>
         <field name=""GetType2"" access=""public"">
-          <type native=""int (int){nativeCallConv}"">delegate* unmanaged[Thiscall]&lt;MyStruct*, int, int&gt;</type>
+          <type native=""int (int, int){nativeCallConv}"">delegate* unmanaged[Thiscall]&lt;MyStruct*, int, int, int&gt;</type>
         </field>
       </vtbl>
     </struct>
@@ -608,14 +647,11 @@ int MyFunctionB(MyStruct* x)
       </field>
       <function name=""GetType"" access=""public"" unsafe=""true"">
         <type>int</type>
-        <param name=""objA"">
-          <type>int</type>
-        </param>
-        <param name=""objB"">
+        <param name=""obj"">
           <type>int</type>
         </param>
         <body>
-          <code>return lpVtbl-&gt;<vtbl explicit=""True"">GetType</vtbl>(<param special=""thisPtr"">(MyStruct*)Unsafe.AsPointer(ref this)</param>, <param name=""objA"">objA</param>, <param name=""objB"">objB</param>);</code>
+          <code>return lpVtbl-&gt;<vtbl explicit=""True"">GetType</vtbl>(<param special=""thisPtr"">(MyStruct*)Unsafe.AsPointer(ref this)</param>, <param name=""obj"">obj</param>);</code>
         </body>
       </function>
       <function name=""GetType"" access=""public"" unsafe=""true"">
@@ -626,14 +662,26 @@ int MyFunctionB(MyStruct* x)
       </function>
       <function name=""GetType"" access=""public"" unsafe=""true"">
         <type>int</type>
-        <param name=""obj"">
+        <param name=""objA"">
+          <type>int</type>
+        </param>
+        <param name=""objB"">
           <type>int</type>
         </param>
         <body>
-          <code>return lpVtbl-&gt;<vtbl explicit=""True"">GetType2</vtbl>(<param special=""thisPtr"">(MyStruct*)Unsafe.AsPointer(ref this)</param>, <param name=""obj"">obj</param>);</code>
+          <code>return lpVtbl-&gt;<vtbl explicit=""True"">GetType2</vtbl>(<param special=""thisPtr"">(MyStruct*)Unsafe.AsPointer(ref this)</param>, <param name=""objA"">objA</param>, <param name=""objB"">objB</param>);</code>
         </body>
       </function>
       <interface>
+        <function name=""GetType"" access=""public"" unsafe=""true"">
+          <type>int</type>
+          <param name=""obj"">
+            <type>int</type>
+          </param>
+        </function>
+        <function name=""GetType"" access=""public"" unsafe=""true"">
+          <type>int</type>
+        </function>
         <function name=""GetType"" access=""public"" unsafe=""true"">
           <type>int</type>
           <param name=""objA"">
@@ -643,25 +691,16 @@ int MyFunctionB(MyStruct* x)
             <type>int</type>
           </param>
         </function>
-        <function name=""GetType"" access=""public"" unsafe=""true"">
-          <type>int</type>
-        </function>
-        <function name=""GetType"" access=""public"" unsafe=""true"">
-          <type>int</type>
-          <param name=""obj"">
-            <type>int</type>
-          </param>
-        </function>
       </interface>
       <vtbl>
         <field name=""GetType"" access=""public"">
-          <type native=""int (int, int){nativeCallConv}"">delegate* unmanaged[Thiscall]&lt;TSelf*, int, int, int&gt;</type>
+          <type native=""int (int){nativeCallConv}"">delegate* unmanaged[Thiscall]&lt;TSelf*, int, int&gt;</type>
         </field>
         <field name=""GetType1"" access=""public"">
           <type native=""int (){nativeCallConv}"">delegate* unmanaged[Thiscall]&lt;TSelf*, int&gt;</type>
         </field>
         <field name=""GetType2"" access=""public"">
-          <type native=""int (int){nativeCallConv}"">delegate* unmanaged[Thiscall]&lt;TSelf*, int, int&gt;</type>
+          <type native=""int (int, int){nativeCallConv}"">delegate* unmanaged[Thiscall]&lt;TSelf*, int, int, int&gt;</type>
         </field>
       </vtbl>
     </struct>

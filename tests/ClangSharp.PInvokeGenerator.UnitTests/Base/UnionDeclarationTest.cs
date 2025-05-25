@@ -7,8 +7,8 @@ namespace ClangSharp.UnitTests;
 
 public abstract class UnionDeclarationTest : PInvokeGeneratorTest
 {
-    protected static readonly string[] ExcludeTestExcludedNames = new[] { "MyUnion" };
-    protected static readonly string[] GuidTestExcludedNames = new[] { "DECLSPEC_UUID" };
+    protected static readonly string[] ExcludeTestExcludedNames = ["MyUnion"];
+    protected static readonly string[] GuidTestExcludedNames = ["DECLSPEC_UUID"];
 
     [TestCase("double", "double")]
     [TestCase("short", "short")]
@@ -80,7 +80,6 @@ public abstract class UnionDeclarationTest : PInvokeGeneratorTest
     [TestCase("unsigned short", "ushort")]
     [TestCase("unsigned int", "uint")]
     [TestCase("unsigned long long", "ulong")]
-    [TestCase("bool", "byte")]
     public Task FixedSizedBufferPrimitiveTest(string nativeType, string expectedManagedType) => FixedSizedBufferPrimitiveTestImpl(nativeType, expectedManagedType);
 
     [TestCase("unsigned char", "byte")]
@@ -93,7 +92,6 @@ public abstract class UnionDeclarationTest : PInvokeGeneratorTest
     [TestCase("unsigned short", "ushort")]
     [TestCase("unsigned int", "uint")]
     [TestCase("unsigned long long", "ulong")]
-    [TestCase("bool", "byte")]
     public Task FixedSizedBufferPrimitiveMultidimensionalTest(string nativeType, string expectedManagedType) => FixedSizedBufferPrimitiveMultidimensionalTestImpl(nativeType, expectedManagedType);
 
     [TestCase("unsigned char", "byte")]
@@ -106,7 +104,6 @@ public abstract class UnionDeclarationTest : PInvokeGeneratorTest
     [TestCase("unsigned short", "ushort")]
     [TestCase("unsigned int", "uint")]
     [TestCase("unsigned long long", "ulong")]
-    [TestCase("bool", "byte")]
     public Task FixedSizedBufferPrimitiveTypedefTest(string nativeType, string expectedManagedType) => FixedSizedBufferPrimitiveTypedefTestImpl(nativeType, expectedManagedType);
 
     [Test]
@@ -185,6 +182,9 @@ public abstract class UnionDeclarationTest : PInvokeGeneratorTest
     [TestCase("bool", "byte")]
     public Task TypedefTest(string nativeType, string expectedManagedType) => TypedefTestImpl(nativeType, expectedManagedType);
 
+    [Test]
+    public Task UnionWithAnonStructWithAnonUnion() => UnionWithAnonStructWithAnonUnionImpl();
+
     protected abstract Task BasicTestImpl(string nativeType, string expectedManagedType);
 
     protected abstract Task BasicTestInCModeImpl(string nativeType, string expectedManagedType);
@@ -240,4 +240,6 @@ public abstract class UnionDeclarationTest : PInvokeGeneratorTest
     protected abstract Task SkipNonDefinitionWithNativeTypeNameTestImpl(string nativeType, string expectedManagedType);
 
     protected abstract Task TypedefTestImpl(string nativeType, string expectedManagedType);
+
+    protected abstract Task UnionWithAnonStructWithAnonUnionImpl();
 }

@@ -3,9 +3,11 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace ClangSharp.UnitTests;
 
+[Platform("win")]
 public sealed class CSharpLatestWindows_CXXMethodDeclarationTest : CXXMethodDeclarationTest
 {
     protected override Task ConstructorTestImpl()
@@ -123,6 +125,40 @@ public sealed class CSharpLatestWindows_CXXMethodDeclarationTest : CXXMethodDecl
         return ValidateGeneratedCSharpLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
+    protected override Task DefaultParameterInheritedFromTemplateTestImpl()
+    {
+        // NOTE: This is a regression test where a struct inherits a function from a template with a default parameter.
+        const string InputContents = @"template <typename T>
+struct MyTemplate
+{
+    int* DoWork(int* value = nullptr)
+    {
+        return value;
+    }
+};
+
+struct MyStruct : public MyTemplate<int>
+{};
+";
+
+        var entryPoint = Environment.Is64BitProcess ? "?DoWork@?$MyTemplate@H@@QEAAPEAHPEAH@Z" : "?DoWork@?$MyTemplate@H@@QEAPEHPEH@Z";
+
+        var expectedOutputContents = $@"using System.Runtime.InteropServices;
+
+namespace ClangSharp.Test
+{{
+    [NativeTypeName(""struct MyStruct : MyTemplate<int>"")]
+    public unsafe partial struct MyStruct
+    {{
+        [DllImport(""ClangSharpPInvokeGenerator"", CallingConvention = CallingConvention.ThisCall, EntryPoint = ""{entryPoint}"", ExactSpelling = true)]
+        public static extern int* DoWork(MyStruct* pThis, int* value = null);
+    }}
+}}
+";
+
+        return ValidateGeneratedCSharpLatestWindowsBindingsAsync(InputContents, expectedOutputContents);
+    }
+
     protected override Task DestructorTestImpl()
     {
         var inputContents = @"struct MyStruct
@@ -168,14 +204,9 @@ public sealed class CSharpLatestWindows_CXXMethodDeclarationTest : CXXMethodDecl
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            if (!Environment.Is64BitProcess)
-            {
-                entryPoint = "?MyVoidMethod@MyStruct@@QAEXXZ";
-            }
-            else
-            {
-                entryPoint = "?MyVoidMethod@MyStruct@@QEAAXXZ";
-            }
+            entryPoint = Environment.Is64BitProcess
+                       ? "?MyVoidMethod@MyStruct@@QEAAXXZ"
+                       : "?MyVoidMethod@MyStruct@@QAEXXZ";
         }
 
         var expectedOutputContents = $@"using System.Runtime.InteropServices;

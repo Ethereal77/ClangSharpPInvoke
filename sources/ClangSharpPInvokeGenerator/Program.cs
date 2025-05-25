@@ -13,7 +13,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using ClangSharp.Abstractions;
 using ClangSharp.Interop;
 using static ClangSharp.Interop.CXDiagnosticSeverity;
 using static ClangSharp.Interop.CXErrorCode;
@@ -21,69 +20,116 @@ using static ClangSharp.Interop.CXTranslationUnit_Flags;
 
 namespace ClangSharp;
 
-public class Program
+public static class Program
 {
-    private static readonly RootCommand s_rootCommand;
+    private static readonly string[] s_additionalOptionAliases = ["--additional", "-a"];
+    private static readonly string[] s_configOptionAliases = ["--config", "-c"];
+    private static readonly string[] s_defineMacroOptionAliases = ["--define-macro", "-D"];
+    private static readonly string[] s_excludeOptionAliases = ["--exclude", "-e"];
+    private static readonly string[] s_fileOptionAliases = ["--file", "-f"];
+    private static readonly string[] s_fileDirectionOptionAliases = ["--file-directory", "-F"];
+    private static readonly string[] s_headerOptionAliases = ["--headerFile", "-hf"];
+    private static readonly string[] s_includeOptionAliases = ["--include", "-i"];
+    private static readonly string[] s_includeDirectoryOptionAliases = ["--include-directory", "-I"];
+    private static readonly string[] s_languageOptionAliases = ["--language", "-x"];
+    private static readonly string[] s_libraryOptionAliases = ["--libraryPath", "-l"];
+    private static readonly string[] s_methodClassNameOptionAliases = ["--methodClassName", "-m"];
+    private static readonly string[] s_namespaceOptionAliases = ["--namespace", "-n"];
+    private static readonly string[] s_nativeTypeNamesStripOptionAliases = ["--nativeTypeNamesToStrip"];
+    private static readonly string[] s_outputModeOptionAliases = ["--output-mode", "-om"];
+    private static readonly string[] s_outputOptionAliases = ["--output", "-o"];
+    private static readonly string[] s_prefixStripOptionAliases = ["--prefixStrip", "-p"];
+    private static readonly string[] s_remapOptionAliases = ["--remap", "-r"];
+    private static readonly string[] s_stdOptionAliases = ["--std", "-std"];
+    private static readonly string[] s_testOutputOptionAliases = ["--test-output", "-to"];
+    private static readonly string[] s_traverseOptionAliases = ["--traverse", "-t"];
+    private static readonly string[] s_versionOptionAliases = ["--version", "-v"];
+    private static readonly string[] s_withAccessSpecifierOptionAliases = ["--with-access-specifier", "-was"];
+    private static readonly string[] s_withAttributeOptionAliases = ["--with-attribute", "-wa"];
+    private static readonly string[] s_withCallConvOptionAliases = ["--with-callconv", "-wcc"];
+    private static readonly string[] s_withClassOptionAliases = ["--with-class", "-wc"];
+    private static readonly string[] s_withGuidOptionAliases = ["--with-guid", "-wg"];
+    private static readonly string[] s_withLengthOptionAliases = ["--with-length", "-wl"];
+    private static readonly string[] s_withLibraryPathOptionAliases = ["--with-librarypath", "-wlb"];
+    private static readonly string[] s_withManualImportOptionAliases = ["--with-manual-import", "-wmi"];
+    private static readonly string[] s_withNamespaceOptionAliases = ["--with-namespace", "-wn"];
+    private static readonly string[] s_withPackingOptionAliases = ["--with-packing", "-wp"];
+    private static readonly string[] s_withSetLastErrorOptionAliases = ["--with-setlasterror", "-wsle"];
+    private static readonly string[] s_withSuppressGCTransitionOptionAliases = ["--with-suppressgctransition", "-wsgct"];
+    private static readonly string[] s_withTransparentStructOptionAliases = ["--with-transparent-struct", "-wts"];
+    private static readonly string[] s_withTypeOptionAliases = ["--with-type", "-wt"];
+    private static readonly string[] s_withUsingOptionAliases = ["--with-using", "-wu"];
 
-    private static readonly Option<bool> s_versionOption;
-    private static readonly Option<string[]> s_additionalOption;
-    private static readonly Option<string[]> s_configOption;
-    private static readonly Option<string[]> s_defineMacros;
-    private static readonly Option<string[]> s_excludedNames;
-    private static readonly Option<string[]> s_files;
-    private static readonly Option<string> s_fileDirectory;
-    private static readonly Option<string> s_headerFile;
-    private static readonly Option<string[]> s_includedNames;
-    private static readonly Option<string[]> s_includeDirectories;
-    private static readonly Option<string> s_language;
-    private static readonly Option<string> s_libraryPath;
-    private static readonly Option<string> s_methodClassName;
-    private static readonly Option<string> s_methodPrefixToStrip;
-    private static readonly Option<string[]> s_nativeTypeNamesToStrip;
-    private static readonly Option<string> s_namespaceName;
-    private static readonly Option<string> s_outputLocation;
-    private static readonly Option<PInvokeGeneratorOutputMode> s_outputMode;
-    private static readonly Option<string[]> s_remappedNameValuePairs;
-    private static readonly Option<string> s_std;
-    private static readonly Option<string> s_testOutputLocation;
-    private static readonly Option<string[]> s_traversalNames;
-    private static readonly Option<string[]> s_withAccessSpecifierNameValuePairs;
-    private static readonly Option<string[]> s_withAttributeNameValuePairs;
-    private static readonly Option<string[]> s_withCallConvNameValuePairs;
-    private static readonly Option<string[]> s_withClassNameValuePairs;
-    private static readonly Option<string[]> s_withGuidNameValuePairs;
-    private static readonly Option<string[]> s_withLibraryPathNameValuePairs;
-    private static readonly Option<string[]> s_withManualImports;
-    private static readonly Option<string[]> s_withNamespaceNameValuePairs;
-    private static readonly Option<string[]> s_withSetLastErrors;
-    private static readonly Option<string[]> s_withSuppressGCTransitions;
-    private static readonly Option<string[]> s_withTransparentStructNameValuePairs;
-    private static readonly Option<string[]> s_withTypeNameValuePairs;
-    private static readonly Option<string[]> s_withUsingNameValuePairs;
-    private static readonly Option<string[]> s_withPackingNameValuePairs;
+    private static readonly Option<string[]> s_additionalOption = GetAdditionalOption();
+    private static readonly Option<string[]> s_configOption = GetConfigOption();
+    private static readonly Option<string[]> s_defineMacros = GetDefineMacroOption();
+    private static readonly Option<string[]> s_excludedNames = GetExcludeOption();
+    private static readonly Option<string[]> s_files = GetFileOption();
+    private static readonly Option<string> s_fileDirectory = GetFileDirectoryOption();
+    private static readonly Option<string> s_headerFile = GetHeaderOption();
+    private static readonly Option<string[]> s_includedNames = GetIncludeOption();
+    private static readonly Option<string[]> s_includeDirectories = GetIncludeDirectoryOption();
+    private static readonly Option<string> s_language = GetLanguageOption();
+    private static readonly Option<string> s_libraryPath = GetLibraryOption();
+    private static readonly Option<string> s_methodClassName = GetMethodClassNameOption();
+    private static readonly Option<string> s_methodPrefixToStrip = GetPrefixStripOption();
+    private static readonly Option<string> s_namespaceName = GetNamespaceOption();
+    private static readonly Option<string[]> s_nativeTypeNamesToStrip = GetNativeTypeNamesStripOption();
+    private static readonly Option<string> s_outputLocation = GetOutputOption();
+    private static readonly Option<PInvokeGeneratorOutputMode> s_outputMode = GetOutputModeOption();
+    private static readonly Option<string[]> s_remappedNameValuePairs = GetRemapOption();
+    private static readonly Option<string> s_std = GetStdOption();
+    private static readonly Option<string> s_testOutputLocation = GetTestOutputOption();
+    private static readonly Option<string[]> s_traversalNames = GetTraverseOption();
+    private static readonly Option<bool> s_versionOption = GetVersionOption();
+    private static readonly Option<string[]> s_withAccessSpecifierNameValuePairs = GetWithAccessSpecifierOption();
+    private static readonly Option<string[]> s_withAttributeNameValuePairs = GetWithAttributeOption();
+    private static readonly Option<string[]> s_withCallConvNameValuePairs = GetWithCallConvOption();
+    private static readonly Option<string[]> s_withClassNameValuePairs = GetWithClassOption();
+    private static readonly Option<string[]> s_withGuidNameValuePairs = GetWithGuidOption();
+    private static readonly Option<string[]> s_withLengthNameValuePairs = GetWithLengthOption();
+    private static readonly Option<string[]> s_withLibraryPathNameValuePairs = GetWithLibraryPathOption();
+    private static readonly Option<string[]> s_withManualImports = GetWithManualImportOption();
+    private static readonly Option<string[]> s_withNamespaceNameValuePairs = GetWithNamespaceOption();
+    private static readonly Option<string[]> s_withPackingNameValuePairs = GetWithPackingOption();
+    private static readonly Option<string[]> s_withSetLastErrors = GetWithSetLastErrorOption();
+    private static readonly Option<string[]> s_withSuppressGCTransitions = GetWithSuppressGCTransitionOption();
+    private static readonly Option<string[]> s_withTransparentStructNameValuePairs = GetWithTransparentStructOption();
+    private static readonly Option<string[]> s_withTypeNameValuePairs = GetWithTypeOption();
+    private static readonly Option<string[]> s_withUsingNameValuePairs = GetWithUsingOption();
 
-    private static readonly TwoColumnHelpRow[] s_configOptions = new TwoColumnHelpRow[]
-    {
+    private static readonly RootCommand s_rootCommand = GetRootCommand();
+
+    private static readonly TwoColumnHelpRow[] s_configOptions =
+    [
         new TwoColumnHelpRow("?, h, help", "Show help and usage information for -c, --config"),
 
-        // Codegen Options
+        new TwoColumnHelpRow("", ""),
+        new TwoColumnHelpRow("# Codegen Options", ""),
+        new TwoColumnHelpRow("", ""),
 
         new TwoColumnHelpRow("compatible-codegen", "Bindings should be generated with .NET Standard 2.0 compatibility. Setting this disables preview code generation."),
         new TwoColumnHelpRow("default-codegen", "Bindings should be generated for the current LTS version of .NET/C#. This is currently .NET 6/C# 10."),
         new TwoColumnHelpRow("latest-codegen", "Bindings should be generated for the current STS version of .NET/C#. This is currently .NET 7/C# 11."),
         new TwoColumnHelpRow("preview-codegen", "Bindings should be generated for the preview version of .NET/C#. This is currently .NET 8/C# 12."),
 
-        // File Options
+        new TwoColumnHelpRow("", ""),
+        new TwoColumnHelpRow("# File Options", ""),
+        new TwoColumnHelpRow("", ""),
 
         new TwoColumnHelpRow("single-file", "Bindings should be generated to a single output file. This is the default."),
         new TwoColumnHelpRow("multi-file", "Bindings should be generated so there is approximately one type per file."),
 
-        // Type Options
+        new TwoColumnHelpRow("", ""),
+        new TwoColumnHelpRow("# Type Options", ""),
+        new TwoColumnHelpRow("", ""),
 
         new TwoColumnHelpRow("unix-types", "Bindings should be generated assuming Unix defaults. This is the default on Unix platforms."),
         new TwoColumnHelpRow("windows-types", "Bindings should be generated assuming Windows defaults. This is the default on Windows platforms."),
 
-        // Exclusion Options
+        new TwoColumnHelpRow("", ""),
+        new TwoColumnHelpRow("# Exclusion Options", ""),
+        new TwoColumnHelpRow("", ""),
 
         new TwoColumnHelpRow("exclude-anonymous-field-helpers", "The helper ref properties generated for fields in nested anonymous structs and unions should not be generated."),
         new TwoColumnHelpRow("exclude-com-proxies", "Types recognized as COM proxies should not have bindings generated. These are currently function declarations ending with _UserFree, _UserMarshal, _UserSize, _UserUnmarshal, _Proxy, or _Stub."),
@@ -94,21 +140,29 @@ public class Program
         new TwoColumnHelpRow("exclude-funcs-with-body", "Bindings for functions with bodies should not be generated."),
         new TwoColumnHelpRow("exclude-using-statics-for-enums", "Enum usages should be fully qualified and should not include a corresponding 'using static EnumName;'"),
 
-        // VTBL Options
+        new TwoColumnHelpRow("", ""),
+        new TwoColumnHelpRow("# Vtbl Options", ""),
+        new TwoColumnHelpRow("", ""),
 
         new TwoColumnHelpRow("explicit-vtbls", "VTBLs should have an explicit type generated with named fields per entry."),
         new TwoColumnHelpRow("implicit-vtbls", "VTBLs should be implicit to reduce metadata bloat. This is the current default"),
         new TwoColumnHelpRow("trimmable-vtbls", "VTBLs should be defined but not used in helper methods to reduce metadata bloat when trimming."),
 
-        // Test Options
+        new TwoColumnHelpRow("", ""),
+        new TwoColumnHelpRow("# Test Options", ""),
+        new TwoColumnHelpRow("", ""),
 
         new TwoColumnHelpRow("generate-tests-nunit", "Basic tests validating size, blittability, and associated metadata should be generated for NUnit."),
         new TwoColumnHelpRow("generate-tests-xunit", "Basic tests validating size, blittability, and associated metadata should be generated for XUnit."),
 
-        // Generation Options
+        new TwoColumnHelpRow("", ""),
+        new TwoColumnHelpRow("# Generation Options", ""),
+        new TwoColumnHelpRow("", ""),
 
         new TwoColumnHelpRow("generate-aggressive-inlining", "[MethodImpl(MethodImplOptions.AggressiveInlining)] should be added to generated helper functions."),
+        new TwoColumnHelpRow("generate-callconv-member-function", "Instance function pointers should use [CallConvMemberFunction] where applicable."),
         new TwoColumnHelpRow("generate-cpp-attributes", "[CppAttributeList(\"\")] should be generated to document the encountered C++ attributes."),
+        new TwoColumnHelpRow("generate-disable-runtime-marshalling", "[assembly: DisableRuntimeMarshalling] should be generated."),
         new TwoColumnHelpRow("generate-doc-includes", "<include> xml documentation tags should be generated for declarations."),
         new TwoColumnHelpRow("generate-file-scoped-namespaces", "Namespaces should be scoped to the file to reduce nesting."),
         new TwoColumnHelpRow("generate-guid-member", "Types with an associated GUID should have a corresponding member generated."),
@@ -117,135 +171,26 @@ public class Program
         new TwoColumnHelpRow("generate-marker-interfaces", "Bindings for marker interfaces representing native inheritance hierarchies should be generated."),
         new TwoColumnHelpRow("generate-native-bitfield-attribute", "[NativeBitfield(\"\", offset: #, length: #)] attribute should be generated to document the encountered bitfield layout."),
         new TwoColumnHelpRow("generate-native-inheritance-attribute", "[NativeInheritance(\"\")] attribute should be generated to document the encountered C++ base type."),
+        new TwoColumnHelpRow("generate-generic-pointer-wrapper", "Pointer<T> should be used for limited generic type support."),
         new TwoColumnHelpRow("generate-setslastsystemerror-attribute", "[SetsLastSystemError] attribute should be generated rather than using SetLastError = true."),
         new TwoColumnHelpRow("generate-template-bindings", "Bindings for template-definitions should be generated. This is currently experimental."),
         new TwoColumnHelpRow("generate-unmanaged-constants", "Unmanaged constants should be generated using static ref readonly properties. This is currently experimental."),
         new TwoColumnHelpRow("generate-vtbl-index-attribute", "[VtblIndex(#)] attribute should be generated to document the underlying VTBL index for a helper method."),
 
-        // Logging Options
+        new TwoColumnHelpRow("", ""),
+        new TwoColumnHelpRow("# Stripping Options", ""),
+        new TwoColumnHelpRow("", ""),
+
+        new TwoColumnHelpRow("strip-enum-member-type-name", "Strips the enum type name from the beginning of its member names."),
+
+        new TwoColumnHelpRow("", ""),
+        new TwoColumnHelpRow("# Logging Options", ""),
+        new TwoColumnHelpRow("", ""),
 
         new TwoColumnHelpRow("log-exclusions", "A list of excluded declaration types should be generated. This will also log if the exclusion was due to an exact or partial match."),
         new TwoColumnHelpRow("log-potential-typedef-remappings", "A list of potential typedef remappings should be generated. This can help identify missing remappings."),
         new TwoColumnHelpRow("log-visited-files", "A list of the visited files should be generated. This can help identify traversal issues."),
-    };
-
-    private static readonly string[] s_additionalOptionAliases = new string[] { "--additional", "-a" };
-    private static readonly string[] s_configOptionAliases = new string[] { "--config", "-c" };
-    private static readonly string[] s_defineMacroOptionAliases = new string[] { "--define-macro", "-D" };
-    private static readonly string[] s_excludeOptionAliases = new string[] { "--exclude", "-e" };
-    private static readonly string[] s_fileOptionAliases = new string[] { "--file", "-f" };
-    private static readonly string[] s_fileDirectionOptionAliases = new string[] { "--file-directory", "-F" };
-    private static readonly string[] s_headerOptionAliases = new string[] { "--headerFile", "-h" };
-    private static readonly string[] s_includeOptionAliases = new string[] { "--include", "-i" };
-    private static readonly string[] s_includeDirectoryOptionAliases = new string[] { "--include-directory", "-I" };
-    private static readonly string[] s_languageOptionAliases = new string[] { "--language", "-x" };
-    private static readonly string[] s_libraryOptionAliases = new string[] { "--libraryPath", "-l" };
-    private static readonly string[] s_methodClassNameOptionAliases = new string[] { "--methodClassName", "-m" };
-    private static readonly string[] s_namespaceOptionAliases = new string[] { "--namespace", "-n" };
-    private static readonly string[] s_nativeTypeNamesStripOptionAliases = new string[] { "--nativeTypeNamesToStrip" };
-    private static readonly string[] s_outputModeOptionAliases = new string[] { "--output-mode", "-om" };
-    private static readonly string[] s_outputOptionAliases = new string[] { "--output", "-o" };
-    private static readonly string[] s_prefixStripOptionAliases = new string[] { "--prefixStrip", "-p" };
-    private static readonly string[] s_remapOptionAliases = new string[] { "--remap", "-r" };
-    private static readonly string[] s_stdOptionAliases = new string[] { "--std", "-std" };
-    private static readonly string[] s_testOutputOptionAliases = new string[] { "--test-output", "-to" };
-    private static readonly string[] s_versionOptionAliases = new string[] { "--version", "-v" };
-    private static readonly string[] s_traverseOptionAliases = new string[] { "--traverse", "-t" };
-    private static readonly string[] s_withAccessSpecifierOptionAliases = new string[] { "--with-access-specifier", "-was" };
-    private static readonly string[] s_withAttributeOptionAliases = new string[] { "--with-attribute", "-wa" };
-    private static readonly string[] s_withCallConvOptionAliases = new string[] { "--with-callconv", "-wcc" };
-    private static readonly string[] s_withClassOptionAliases = new string[] { "--with-class", "-wc" };
-    private static readonly string[] s_withGuidOptionAliases = new string[] { "--with-guid", "-wg" };
-    private static readonly string[] s_withLibraryPathOptionAliases = new string[] { "--with-librarypath", "-wlb" };
-    private static readonly string[] s_withManualImportOptionAliases = new string[] { "--with-manual-import", "-wmi" };
-    private static readonly string[] s_withNamespaceOptionAliases = new string[] { "--with-namespace", "-wn" };
-    private static readonly string[] s_withSetLastErrorOptionAliases = new string[] { "--with-setlasterror", "-wsle" };
-    private static readonly string[] s_withSuppressGCTransitionOptionAliases = new string[] { "--with-suppressgctransition", "-wsgct" };
-    private static readonly string[] s_withTransparentStructOptionAliases = new string[] { "--with-transparent-struct", "-wts" };
-    private static readonly string[] s_withTypeOptionAliases = new string[] { "--with-type", "-wt" };
-    private static readonly string[] s_withUsingOptionAliases = new string[] { "--with-using", "-wu" };
-    private static readonly string[] s_withPackingOptionAliases = new string[] { "--with-packing", "-wp" };
-
-    static Program()
-    {
-        s_additionalOption = GetAdditionalOption();
-        s_configOption = GetConfigOption();
-        s_defineMacros = GetDefineMacroOption();
-        s_excludedNames = GetExcludeOption();
-        s_files = GetFileOption();
-        s_fileDirectory = GetFileDirectoryOption();
-        s_headerFile = GetHeaderOption();
-        s_includedNames = GetIncludeOption();
-        s_includeDirectories = GetIncludeDirectoryOption();
-        s_language = GetLanguageOption();
-        s_libraryPath = GetLibraryOption();
-        s_methodClassName = GetMethodClassNameOption();
-        s_namespaceName = GetNamespaceOption();
-        s_outputMode = GetOutputModeOption();
-        s_outputLocation = GetOutputOption();
-        s_methodPrefixToStrip = GetPrefixStripOption();
-        s_nativeTypeNamesToStrip = GetNativeTypeNamesStripOption();
-        s_remappedNameValuePairs = GetRemapOption();
-        s_std = GetStdOption();
-        s_testOutputLocation = GetTestOutputOption();
-        s_traversalNames = GetTraverseOption();
-        s_versionOption = GetVersionOption();
-        s_withAccessSpecifierNameValuePairs = GetWithAccessSpecifierOption();
-        s_withAttributeNameValuePairs = GetWithAttributeOption();
-        s_withCallConvNameValuePairs = GetWithCallConvOption();
-        s_withClassNameValuePairs = GetWithClassOption();
-        s_withGuidNameValuePairs = GetWithGuidOption();
-        s_withLibraryPathNameValuePairs = GetWithLibraryPathOption();
-        s_withManualImports = GetWithManualImportOption();
-        s_withNamespaceNameValuePairs = GetWithNamespaceOption();
-        s_withSetLastErrors = GetWithSetLastErrorOption();
-        s_withSuppressGCTransitions = GetWithSuppressGCTransitionOption();
-        s_withTransparentStructNameValuePairs = GetWithTransparentStructOption();
-        s_withTypeNameValuePairs = GetWithTypeOption();
-        s_withUsingNameValuePairs = GetWithUsingOption();
-        s_withPackingNameValuePairs = GetWithPackingOption();
-
-        s_rootCommand = new RootCommand("ClangSharp P/Invoke Binding Generator")
-        {
-            s_additionalOption,
-            s_configOption,
-            s_defineMacros,
-            s_excludedNames,
-            s_files,
-            s_fileDirectory,
-            s_headerFile,
-            s_includedNames,
-            s_includeDirectories,
-            s_language,
-            s_libraryPath,
-            s_methodClassName,
-            s_namespaceName,
-            s_outputMode,
-            s_outputLocation,
-            s_methodPrefixToStrip,
-            s_nativeTypeNamesToStrip,
-            s_remappedNameValuePairs,
-            s_std,
-            s_testOutputLocation,
-            s_traversalNames,
-            s_versionOption,
-            s_withAccessSpecifierNameValuePairs,
-            s_withAttributeNameValuePairs,
-            s_withCallConvNameValuePairs,
-            s_withClassNameValuePairs,
-            s_withGuidNameValuePairs,
-            s_withLibraryPathNameValuePairs,
-            s_withManualImports,
-            s_withNamespaceNameValuePairs,
-            s_withSetLastErrors,
-            s_withSuppressGCTransitions,
-            s_withTransparentStructNameValuePairs,
-            s_withTypeNameValuePairs,
-            s_withUsingNameValuePairs,
-            s_withPackingNameValuePairs
-        };
-        Handler.SetHandler(s_rootCommand, (Action<InvocationContext>)Run);
-    }
+    ];
 
     public static IEnumerable<HelpSectionDelegate> GetExtendedHelp(HelpContext context)
     {
@@ -273,52 +218,55 @@ public class Program
             .UseExceptionHandler()
             .CancelOnProcessTermination()
             .Build();
-        return await parser.InvokeAsync(args);
+        return await parser.InvokeAsync(args).ConfigureAwait(false);
     }
 
     public static void Run(InvocationContext context)
     {
-        var additionalArgs = context.ParseResult.GetValueForOption(s_additionalOption) ?? Array.Empty<string>();
-        var configSwitches = context.ParseResult.GetValueForOption(s_configOption) ?? Array.Empty<string>();
-        var defineMacros = context.ParseResult.GetValueForOption(s_defineMacros) ?? Array.Empty<string>();
-        var excludedNames = context.ParseResult.GetValueForOption(s_excludedNames) ?? Array.Empty<string>();
-        var files = context.ParseResult.GetValueForOption(s_files) ?? Array.Empty<string>();
+        ArgumentNullException.ThrowIfNull(context);
+
+        var additionalArgs = context.ParseResult.GetValueForOption(s_additionalOption) ?? [];
+        var configSwitches = context.ParseResult.GetValueForOption(s_configOption) ?? [];
+        var defineMacros = context.ParseResult.GetValueForOption(s_defineMacros) ?? [];
+        var excludedNames = context.ParseResult.GetValueForOption(s_excludedNames) ?? [];
+        var files = context.ParseResult.GetValueForOption(s_files) ?? [];
         var fileDirectory = context.ParseResult.GetValueForOption(s_fileDirectory) ?? "";
         var headerFile = context.ParseResult.GetValueForOption(s_headerFile) ?? "";
-        var includedNames = context.ParseResult.GetValueForOption(s_includedNames) ?? Array.Empty<string>();
-        var includeDirectories = context.ParseResult.GetValueForOption(s_includeDirectories) ?? Array.Empty<string>();
+        var includedNames = context.ParseResult.GetValueForOption(s_includedNames) ?? [];
+        var includeDirectories = context.ParseResult.GetValueForOption(s_includeDirectories) ?? [];
         var language = context.ParseResult.GetValueForOption(s_language) ?? "";
         var libraryPath = context.ParseResult.GetValueForOption(s_libraryPath) ?? "";
         var methodClassName = context.ParseResult.GetValueForOption(s_methodClassName) ?? "";
         var methodPrefixToStrip = context.ParseResult.GetValueForOption(s_methodPrefixToStrip) ?? "";
-        var nativeTypeNamesToStrip = context.ParseResult.GetValueForOption(s_nativeTypeNamesToStrip) ?? Array.Empty<string>();
+        var nativeTypeNamesToStrip = context.ParseResult.GetValueForOption(s_nativeTypeNamesToStrip) ?? [];
         var namespaceName = context.ParseResult.GetValueForOption(s_namespaceName) ?? "";
         var outputLocation = context.ParseResult.GetValueForOption(s_outputLocation) ?? "";
         var outputMode = context.ParseResult.GetValueForOption(s_outputMode);
-        var remappedNameValuePairs = context.ParseResult.GetValueForOption(s_remappedNameValuePairs) ?? Array.Empty<string>();
+        var remappedNameValuePairs = context.ParseResult.GetValueForOption(s_remappedNameValuePairs) ?? [];
         var std = context.ParseResult.GetValueForOption(s_std) ?? "";
         var testOutputLocation = context.ParseResult.GetValueForOption(s_testOutputLocation) ?? "";
-        var traversalNames = context.ParseResult.GetValueForOption(s_traversalNames) ?? Array.Empty<string>();
-        var withAccessSpecifierNameValuePairs = context.ParseResult.GetValueForOption(s_withAccessSpecifierNameValuePairs) ?? Array.Empty<string>();
-        var withAttributeNameValuePairs = context.ParseResult.GetValueForOption(s_withAttributeNameValuePairs) ?? Array.Empty<string>();
-        var withCallConvNameValuePairs = context.ParseResult.GetValueForOption(s_withCallConvNameValuePairs) ?? Array.Empty<string>();
-        var withClassNameValuePairs = context.ParseResult.GetValueForOption(s_withClassNameValuePairs) ?? Array.Empty<string>();
-        var withGuidNameValuePairs = context.ParseResult.GetValueForOption(s_withGuidNameValuePairs) ?? Array.Empty<string>();
-        var withLibraryPathNameValuePairs = context.ParseResult.GetValueForOption(s_withLibraryPathNameValuePairs) ?? Array.Empty<string>();
-        var withManualImports = context.ParseResult.GetValueForOption(s_withManualImports) ?? Array.Empty<string>();
-        var withNamespaceNameValuePairs = context.ParseResult.GetValueForOption(s_withNamespaceNameValuePairs) ?? Array.Empty<string>();
-        var withSetLastErrors = context.ParseResult.GetValueForOption(s_withSetLastErrors) ?? Array.Empty<string>();
-        var withSuppressGCTransitions = context.ParseResult.GetValueForOption(s_withSuppressGCTransitions) ?? Array.Empty<string>();
-        var withTransparentStructNameValuePairs = context.ParseResult.GetValueForOption(s_withTransparentStructNameValuePairs) ?? Array.Empty<string>();
-        var withTypeNameValuePairs = context.ParseResult.GetValueForOption(s_withTypeNameValuePairs) ?? Array.Empty<string>();
-        var withUsingNameValuePairs = context.ParseResult.GetValueForOption(s_withUsingNameValuePairs) ?? Array.Empty<string>();
-        var withPackingNameValuePairs = context.ParseResult.GetValueForOption(s_withPackingNameValuePairs) ?? Array.Empty<string>();
+        var traversalNames = context.ParseResult.GetValueForOption(s_traversalNames) ?? [];
+        var withAccessSpecifierNameValuePairs = context.ParseResult.GetValueForOption(s_withAccessSpecifierNameValuePairs) ?? [];
+        var withAttributeNameValuePairs = context.ParseResult.GetValueForOption(s_withAttributeNameValuePairs) ?? [];
+        var withCallConvNameValuePairs = context.ParseResult.GetValueForOption(s_withCallConvNameValuePairs) ?? [];
+        var withClassNameValuePairs = context.ParseResult.GetValueForOption(s_withClassNameValuePairs) ?? [];
+        var withGuidNameValuePairs = context.ParseResult.GetValueForOption(s_withGuidNameValuePairs) ?? [];
+        var withLengthNameValuePairs = context.ParseResult.GetValueForOption(s_withLengthNameValuePairs) ?? [];
+        var withLibraryPathNameValuePairs = context.ParseResult.GetValueForOption(s_withLibraryPathNameValuePairs) ?? [];
+        var withManualImports = context.ParseResult.GetValueForOption(s_withManualImports) ?? [];
+        var withNamespaceNameValuePairs = context.ParseResult.GetValueForOption(s_withNamespaceNameValuePairs) ?? [];
+        var withSetLastErrors = context.ParseResult.GetValueForOption(s_withSetLastErrors) ?? [];
+        var withSuppressGCTransitions = context.ParseResult.GetValueForOption(s_withSuppressGCTransitions) ?? [];
+        var withTransparentStructNameValuePairs = context.ParseResult.GetValueForOption(s_withTransparentStructNameValuePairs) ?? [];
+        var withTypeNameValuePairs = context.ParseResult.GetValueForOption(s_withTypeNameValuePairs) ?? [];
+        var withUsingNameValuePairs = context.ParseResult.GetValueForOption(s_withUsingNameValuePairs) ?? [];
+        var withPackingNameValuePairs = context.ParseResult.GetValueForOption(s_withPackingNameValuePairs) ?? [];
 
         var versionResult = context.ParseResult.FindResultFor(s_versionOption);
 
         if (versionResult is not null)
         {
-            context.Console.WriteLine($"{s_rootCommand.Description} version 16.0.6");
+            context.Console.WriteLine($"{s_rootCommand.Description} version 20.1.2");
             context.Console.WriteLine($"  {clang.getClangVersion()}");
             context.Console.WriteLine($"  {clangsharp.getVersion()}");
             context.ExitCode = -1;
@@ -348,6 +296,7 @@ public class Program
         ParseKeyValuePairs(withCallConvNameValuePairs, errorList, out Dictionary<string, string> withCallConvs);
         ParseKeyValuePairs(withClassNameValuePairs, errorList, out Dictionary<string, string> withClasses);
         ParseKeyValuePairs(withGuidNameValuePairs, errorList, out Dictionary<string, Guid> withGuids);
+        ParseKeyValuePairs(withLengthNameValuePairs, errorList, out Dictionary<string, string> withLengths);
         ParseKeyValuePairs(withLibraryPathNameValuePairs, errorList, out Dictionary<string, string> withLibraryPaths);
         ParseKeyValuePairs(withNamespaceNameValuePairs, errorList, out Dictionary<string, string> withNamespaces);
         ParseKeyValuePairs(withTransparentStructNameValuePairs, errorList, out Dictionary<string, (string, PInvokeGeneratorTransparentStructKind)> withTransparentStructs);
@@ -495,6 +444,13 @@ public class Program
                     break;
                 }
 
+                case "exclude-using-statics-for-guid-members":
+                case "dont-use-using-statics-for-guid-members":
+                {
+                    configOptions |= PInvokeGeneratorConfigurationOptions.DontUseUsingStaticsForGuidMember;
+                    break;
+                }
+
                 // VTBL Options
 
                 case "explicit-vtbls":
@@ -558,9 +514,21 @@ public class Program
                     break;
                 }
 
+                case "generate-callconv-member-function":
+                {
+                    configOptions |= PInvokeGeneratorConfigurationOptions.GenerateCallConvMemberFunction;
+                    break;
+                }
+
                 case "generate-cpp-attributes":
                 {
                     configOptions |= PInvokeGeneratorConfigurationOptions.GenerateCppAttributes;
+                    break;
+                }
+
+                case "generate-disable-runtime-marshalling":
+                {
+                    configOptions |= PInvokeGeneratorConfigurationOptions.GenerateDisableRuntimeMarshalling;
                     break;
                 }
 
@@ -612,6 +580,12 @@ public class Program
                     break;
                 }
 
+                case "generate-generic-pointer-wrapper":
+                {
+                    configOptions |= PInvokeGeneratorConfigurationOptions.GenerateGenericPointerWrapper;
+                    break;
+                }
+
                 case "generate-setslastsystemerror-attribute":
                 {
                     configOptions |= PInvokeGeneratorConfigurationOptions.GenerateSetsLastSystemErrorAttribute;
@@ -653,6 +627,14 @@ public class Program
                 case "log-visited-files":
                 {
                     configOptions |= PInvokeGeneratorConfigurationOptions.LogVisitedFiles;
+                    break;
+                }
+
+                // Strip Options
+
+                case "strip-enum-member-type-name":
+                {
+                    configOptions |= PInvokeGeneratorConfigurationOptions.StripEnumMemberTypeName;
                     break;
                 }
 
@@ -701,8 +683,10 @@ public class Program
             }
             context.Console.Error.Write(Environment.NewLine);
 
-            new CustomHelpBuilder(context.Console, context.LocalizationResources)
-                .Write(s_rootCommand, context.Console.Out.CreateTextWriter());
+            using var textWriter = context.Console.Out.CreateTextWriter();
+            var customHelpBuilder = new CustomHelpBuilder(context.Console, context.LocalizationResources);
+            customHelpBuilder.Write(s_rootCommand, textWriter);
+
             context.ExitCode = -1;
             return;
         }
@@ -711,15 +695,15 @@ public class Program
                                  ? new string[] {
                                      $"--language={language}",               // Treat subsequent input files as having type <language>
                                      "-Wno-pragma-once-outside-header"       // We are processing files which may be header files
-                                 } : new string[] {
+                                 } : [
                                      $"--language={language}",               // Treat subsequent input files as having type <language>
                                      $"--std={std}",                         // Language standard to compile for
                                      "-Wno-pragma-once-outside-header"       // We are processing files which may be header files
-                                 };
+                                 ];
 
-        clangCommandLineArgs = clangCommandLineArgs.Concat(includeDirectories.Select(x => "--include-directory=" + x)).ToArray();
-        clangCommandLineArgs = clangCommandLineArgs.Concat(defineMacros.Select(x => "--define-macro=" + x)).ToArray();
-        clangCommandLineArgs = clangCommandLineArgs.Concat(additionalArgs).ToArray();
+        clangCommandLineArgs = [.. clangCommandLineArgs, .. includeDirectories.Select(x => $"--include-directory={x}")];
+        clangCommandLineArgs = [.. clangCommandLineArgs, .. defineMacros.Select(x => $"--define-macro={x}")];
+        clangCommandLineArgs = [.. clangCommandLineArgs, .. additionalArgs];
 
         var translationFlags = CXTranslationUnit_None;
 
@@ -741,6 +725,7 @@ public class Program
             WithCallConvs = withCallConvs,
             WithClasses = withClasses,
             WithGuids = withGuids,
+            WithLengths = withLengths,
             WithLibraryPaths = withLibraryPaths,
             WithManualImports = withManualImports,
             WithNamespaces = withNamespaces,
@@ -765,7 +750,7 @@ public class Program
             {
                 var filePath = Path.Combine(fileDirectory, file);
 
-                var translationUnitError = CXTranslationUnit.TryParse(pinvokeGenerator.IndexHandle, filePath, clangCommandLineArgs, Array.Empty<CXUnsavedFile>(), translationFlags, out var handle);
+                var translationUnitError = CXTranslationUnit.TryParse(pinvokeGenerator.IndexHandle, filePath, clangCommandLineArgs, [], translationFlags, out var handle);
                 var skipProcessing = false;
 
                 if (translationUnitError != CXError_Success)
@@ -798,6 +783,8 @@ public class Program
                     continue;
                 }
 
+#pragma warning disable CA1031 // Do not catch general exception types
+
                 try
                 {
                     using var translationUnit = TranslationUnit.GetOrCreate(handle);
@@ -810,6 +797,8 @@ public class Program
                 {
                     context.Console.WriteLine(e.ToString());
                 }
+
+#pragma warning restore CA1031 // Do not catch general exception types
             }
 
             if (pinvokeGenerator.Diagnostics.Count != 0)
@@ -848,13 +837,13 @@ public class Program
 
     private static void ParseKeyValuePairs(IEnumerable<string> keyValuePairs, List<string> errorList, out Dictionary<string, string> result)
     {
-        result = new Dictionary<string, string>();
+        result = [];
 
         foreach (var keyValuePair in keyValuePairs)
         {
-            var parts = keyValuePair.Split('=');
+            var parts = keyValuePair.Split('=', 2);
 
-            if (parts.Length != 2)
+            if (parts.Length < 2)
             {
                 errorList.Add($"Error: Invalid key/value pair argument: {keyValuePair}. Expected 'name=value'");
                 continue;
@@ -874,7 +863,7 @@ public class Program
 
     private static void ParseKeyValuePairs(IEnumerable<string> keyValuePairs, List<string> errorList, out Dictionary<string, AccessSpecifier> result)
     {
-        result = new Dictionary<string, AccessSpecifier>();
+        result = [];
 
         foreach (var keyValuePair in keyValuePairs)
         {
@@ -900,7 +889,7 @@ public class Program
 
     private static void ParseKeyValuePairs(IEnumerable<string> keyValuePairs, List<string> errorList, out Dictionary<string, Guid> result)
     {
-        result = new Dictionary<string, Guid>();
+        result = [];
 
         foreach (var keyValuePair in keyValuePairs)
         {
@@ -932,7 +921,7 @@ public class Program
 
     private static void ParseKeyValuePairs(IEnumerable<string> keyValuePairs, List<string> errorList, out Dictionary<string, (string, PInvokeGeneratorTransparentStructKind)> result)
     {
-        result = new Dictionary<string, (string, PInvokeGeneratorTransparentStructKind)>();
+        result = [];
 
         foreach (var keyValuePair in keyValuePairs)
         {
@@ -972,7 +961,7 @@ public class Program
 
     private static void ParseKeyValuePairs(IEnumerable<string> keyValuePairs, List<string> errorList, out Dictionary<string, IReadOnlyList<string>> result)
     {
-        result = new Dictionary<string, IReadOnlyList<string>>();
+        result = [];
 
         foreach (var keyValuePair in keyValuePairs)
         {
@@ -1177,6 +1166,52 @@ public class Program
         };
     }
 
+    private static RootCommand GetRootCommand()
+    {
+        var rootCommand = new RootCommand("ClangSharp P/Invoke Binding Generator")
+        {
+            s_additionalOption,
+            s_configOption,
+            s_defineMacros,
+            s_excludedNames,
+            s_files,
+            s_fileDirectory,
+            s_headerFile,
+            s_includedNames,
+            s_includeDirectories,
+            s_language,
+            s_libraryPath,
+            s_methodClassName,
+            s_namespaceName,
+            s_outputMode,
+            s_outputLocation,
+            s_methodPrefixToStrip,
+            s_nativeTypeNamesToStrip,
+            s_remappedNameValuePairs,
+            s_std,
+            s_testOutputLocation,
+            s_traversalNames,
+            s_versionOption,
+            s_withAccessSpecifierNameValuePairs,
+            s_withAttributeNameValuePairs,
+            s_withCallConvNameValuePairs,
+            s_withClassNameValuePairs,
+            s_withGuidNameValuePairs,
+            s_withLengthNameValuePairs,
+            s_withLibraryPathNameValuePairs,
+            s_withManualImports,
+            s_withNamespaceNameValuePairs,
+            s_withPackingNameValuePairs,
+            s_withSetLastErrors,
+            s_withSuppressGCTransitions,
+            s_withTransparentStructNameValuePairs,
+            s_withTypeNameValuePairs,
+            s_withUsingNameValuePairs
+        };
+        Handler.SetHandler(rootCommand, (Action<InvocationContext>)Run);
+        return rootCommand;
+    }
+
     private static Option<string> GetStdOption()
     {
         return new Option<string>(
@@ -1265,6 +1300,17 @@ public class Program
         return new Option<string[]>(
             aliases: s_withGuidOptionAliases,
             description: "A GUID to be used for the given declaration during binding generation. Supports wildcards.",
+            getDefaultValue: Array.Empty<string>
+        ) {
+            AllowMultipleArgumentsPerToken = true
+        };
+    }
+
+    private static Option<string[]> GetWithLengthOption()
+    {
+        return new Option<string[]>(
+            aliases: s_withLengthOptionAliases,
+            description: "A length to be used for the given declaration during binding generation. Supports wildcards.",
             getDefaultValue: Array.Empty<string>
         ) {
             AllowMultipleArgumentsPerToken = true

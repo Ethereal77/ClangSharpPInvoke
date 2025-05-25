@@ -7,8 +7,8 @@ namespace ClangSharp.UnitTests;
 
 public abstract class StructDeclarationTest : PInvokeGeneratorTest
 {
-    protected static readonly string[] ExcludeTestExcludedNames = new[] { "MyStruct" };
-    protected static readonly string[] GuidTestExcludedNames = new[] { "DECLSPEC_UUID" };
+    protected static readonly string[] ExcludeTestExcludedNames = ["MyStruct"];
+    protected static readonly string[] GuidTestExcludedNames = ["DECLSPEC_UUID"];
 
     [TestCase("double", "double")]
     [TestCase("short", "short")]
@@ -92,7 +92,6 @@ public abstract class StructDeclarationTest : PInvokeGeneratorTest
     [TestCase("unsigned short", "ushort")]
     [TestCase("unsigned int", "uint")]
     [TestCase("unsigned long long", "ulong")]
-    [TestCase("bool", "byte")]
     public Task FixedSizedBufferPrimitiveTest(string nativeType, string expectedManagedType) => FixedSizedBufferPrimitiveTestImpl(nativeType, expectedManagedType);
 
     [TestCase("unsigned char", "byte")]
@@ -105,7 +104,6 @@ public abstract class StructDeclarationTest : PInvokeGeneratorTest
     [TestCase("unsigned short", "ushort")]
     [TestCase("unsigned int", "uint")]
     [TestCase("unsigned long long", "ulong")]
-    [TestCase("bool", "byte")]
     public Task FixedSizedBufferPrimitiveMultidimensionalTest(string nativeType, string expectedManagedType) => FixedSizedBufferPrimitiveMultidimensionalTestImpl(nativeType, expectedManagedType);
 
     [TestCase("unsigned char", "byte")]
@@ -118,7 +116,6 @@ public abstract class StructDeclarationTest : PInvokeGeneratorTest
     [TestCase("unsigned short", "ushort")]
     [TestCase("unsigned int", "uint")]
     [TestCase("unsigned long long", "ulong")]
-    [TestCase("bool", "byte")]
     public Task FixedSizedBufferPrimitiveTypedefTest(string nativeType, string expectedManagedType) => FixedSizedBufferPrimitiveTypedefTestImpl(nativeType, expectedManagedType);
 
     [Test]
@@ -218,6 +215,21 @@ public abstract class StructDeclarationTest : PInvokeGeneratorTest
     [Test]
     public Task SourceLocationAttributeTest() => SourceLocationAttributeTestImpl();
 
+    // Regression test: the code that generated the name for anonymous types had a couple of
+    // bugs:
+    // * It would only append a numeral if the parent had more than one anonymous records,
+    //   but an anonymous typed array didn't count as a record resulting in multiple structs
+    //   named `_Anonymous_e__Struct`.
+    // * The code that remapped the name of anonymous types was different between the code that
+    //   generated the type definition and the code that defined fields in a FixedBuffer.
+    [Test]
+    public Task AnonStructAndAnonStructArray() => AnonStructAndAnonStructArrayImpl();
+
+    // Regression test: nested anonymous structs would result in:
+    // error CS0542: '_Anonymous_e__Struct': member names cannot be the same as their enclosing type
+    [Test]
+    public Task DeeplyNestedAnonStructs() => DeeplyNestedAnonStructsImpl();
+
     protected abstract Task IncompleteArraySizeTestImpl(string nativeType, string expectedManagedType);
 
     protected abstract Task BasicTestImpl(string nativeType, string expectedManagedType);
@@ -293,4 +305,8 @@ public abstract class StructDeclarationTest : PInvokeGeneratorTest
     protected abstract Task WithPackingTestImpl();
 
     protected abstract Task SourceLocationAttributeTestImpl();
+
+    protected abstract Task AnonStructAndAnonStructArrayImpl();
+
+    protected abstract Task DeeplyNestedAnonStructsImpl();
 }

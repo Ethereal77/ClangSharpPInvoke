@@ -17,6 +17,9 @@ public abstract class CXXMethodDeclarationTest : PInvokeGeneratorTest
     public Task ConversionTest() => ConversionTestImpl();
 
     [Test]
+    public Task DefaultParameterInheritedFromTemplateTest() => DefaultParameterInheritedFromTemplateTestImpl();
+
+    [Test]
     public Task DestructorTest() => DestructorTestImpl();
 
     [Test]
@@ -70,9 +73,9 @@ public abstract class CXXMethodDeclarationTest : PInvokeGeneratorTest
 	int size;
 } context_t;
 
-int buf_close(void *pcontext)
+int buf_close(void *pContext)
 {
-	((context_t*)pcontext)->buf=0;
+	((context_t*)pContext)->buf=0;
 	return 0;
 }
 ";
@@ -89,9 +92,9 @@ int buf_close(void *pcontext)
 
     public static unsafe partial class Methods
     {
-        public static int buf_close(void* pcontext)
+        public static int buf_close(void* pContext)
         {
-            ((context_t*)(pcontext))->buf = null;
+            ((context_t*)(pContext))->buf = null;
             return 0;
         }
     }
@@ -106,6 +109,8 @@ int buf_close(void *pcontext)
     protected abstract Task ConstructorWithInitializeTestImpl();
 
     protected abstract Task ConversionTestImpl();
+
+    protected abstract Task DefaultParameterInheritedFromTemplateTestImpl();
 
     protected abstract Task DestructorTestImpl();
 

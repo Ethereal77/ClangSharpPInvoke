@@ -3,9 +3,11 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace ClangSharp.UnitTests;
 
+[Platform("win")]
 public sealed class XmlLatestWindows_FunctionDeclarationDllImportTest : FunctionDeclarationDllImportTest
 {
     protected override Task BasicTestImpl()
@@ -449,4 +451,14 @@ struct MyStruct
     }
 
     protected override Task VarargsTestImpl() => Task.CompletedTask;
+
+    protected override Task IntrinsicsTestImpl()
+    {
+        const string InputContents = @"extern ""C"" void __builtin_cpu_init();
+#pragma intrinsic(__builtin_cpu_init)";
+
+        const string ExpectedOutputContents = @"";
+
+        return ValidateGeneratedCSharpDefaultWindowsBindingsAsync(InputContents, ExpectedOutputContents);
+    }
 }

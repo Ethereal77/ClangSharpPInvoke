@@ -1,12 +1,13 @@
 // Copyright (c) .NET Foundation and Contributors. All Rights Reserved. Licensed under the MIT License (MIT). See License.md in the repository root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace ClangSharp.UnitTests;
 
+[Platform("win")]
 public sealed class CSharpDefaultWindows_UnionDeclarationTest : UnionDeclarationTest
 {
     protected override Task BasicTestImpl(string nativeType, string expectedManagedType)
@@ -69,7 +70,7 @@ namespace ClangSharp.Test
     }}
 }}
 ";
-        return ValidateGeneratedCSharpDefaultWindowsBindingsAsync(inputContents, expectedOutputContents, commandlineArgs: Array.Empty<string>());
+        return ValidateGeneratedCSharpDefaultWindowsBindingsAsync(inputContents, expectedOutputContents, commandLineArgs: []);
     }
 
     protected override Task BasicWithNativeTypeNameTestImpl(string nativeType, string expectedManagedType)
@@ -913,7 +914,7 @@ namespace ClangSharp.Test
         {
             get
             {
-                return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.Anonymous.w, 1));
+                return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.Anonymous_1.w, 1));
             }
         }
 
@@ -921,12 +922,12 @@ namespace ClangSharp.Test
         {
             readonly get
             {
-                return Anonymous.Anonymous.o0_b0_16;
+                return Anonymous.Anonymous_1.o0_b0_16;
             }
 
             set
             {
-                Anonymous.Anonymous.o0_b0_16 = value;
+                Anonymous.Anonymous_1.o0_b0_16 = value;
             }
         }
 
@@ -934,12 +935,12 @@ namespace ClangSharp.Test
         {
             readonly get
             {
-                return Anonymous.Anonymous.o0_b16_4;
+                return Anonymous.Anonymous_1.o0_b16_4;
             }
 
             set
             {
-                Anonymous.Anonymous.o0_b16_4 = value;
+                Anonymous.Anonymous_1.o0_b16_4 = value;
             }
         }
 
@@ -951,10 +952,10 @@ namespace ClangSharp.Test
 
             [FieldOffset(0)]
             [NativeTypeName(""__AnonymousRecord_ClangUnsavedFile_L10_C9"")]
-            public _Anonymous_e__Union Anonymous;
+            public _Anonymous_1_e__Union Anonymous_1;
 
             [StructLayout(LayoutKind.Explicit)]
-            public partial struct _Anonymous_e__Union
+            public partial struct _Anonymous_1_e__Union
             {
                 [FieldOffset(0)]
                 public int w;
@@ -1436,6 +1437,107 @@ namespace ClangSharp.Test
         [FieldOffset(0)]
         [NativeTypeName(""MyTypedefAlias"")]
         public {expectedManagedType} b;
+    }}
+}}
+";
+
+        return ValidateGeneratedCSharpDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+    }
+
+    protected override Task UnionWithAnonStructWithAnonUnionImpl()
+    {
+        var inputContents = $@"typedef union _MY_UNION
+{{
+    long AsArray[2];
+    struct
+    {{
+        long First;
+        union
+        {{
+            struct
+            {{
+                long Second;
+            }} A;
+
+            struct
+            {{
+                long Second;
+            }} B;
+        }};
+    }};
+}} MY_UNION;";
+
+        var expectedOutputContents = $@"using System.Runtime.InteropServices;
+
+namespace ClangSharp.Test
+{{
+    [StructLayout(LayoutKind.Explicit)]
+    public unsafe partial struct _MY_UNION
+    {{
+        [FieldOffset(0)]
+        [NativeTypeName(""long[2]"")]
+        public fixed int AsArray[2];
+
+        [FieldOffset(0)]
+        [NativeTypeName(""__AnonymousRecord_ClangUnsavedFile_L4_C5"")]
+        public _Anonymous_e__Struct Anonymous;
+
+        public ref int First
+        {{
+            get
+            {{
+                return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.First, 1));
+            }}
+        }}
+
+        public ref _Anonymous_e__Struct._Anonymous_1_e__Union._A_e__Struct A
+        {{
+            get
+            {{
+                return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.Anonymous_1.A, 1));
+            }}
+        }}
+
+        public ref _Anonymous_e__Struct._Anonymous_1_e__Union._B_e__Struct B
+        {{
+            get
+            {{
+                return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.Anonymous_1.B, 1));
+            }}
+        }}
+
+        public partial struct _Anonymous_e__Struct
+        {{
+            [NativeTypeName(""long"")]
+            public int First;
+
+            [NativeTypeName(""__AnonymousRecord_ClangUnsavedFile_L7_C9"")]
+            public _Anonymous_1_e__Union Anonymous_1;
+
+            [StructLayout(LayoutKind.Explicit)]
+            public partial struct _Anonymous_1_e__Union
+            {{
+                [FieldOffset(0)]
+                [NativeTypeName(""__AnonymousRecord_ClangUnsavedFile_L9_C13"")]
+                public _A_e__Struct A;
+
+                [FieldOffset(0)]
+                [NativeTypeName(""__AnonymousRecord_ClangUnsavedFile_L14_C13"")]
+                public _B_e__Struct B;
+
+                public partial struct _A_e__Struct
+                {{
+                    [NativeTypeName(""long"")]
+                    public int Second;
+                }}
+
+                public partial struct _B_e__Struct
+                {{
+                    [NativeTypeName(""long"")]
+                    public int Second;
+                }}
+            }}
+        }}
     }}
 }}
 ";

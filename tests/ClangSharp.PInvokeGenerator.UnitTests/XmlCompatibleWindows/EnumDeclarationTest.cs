@@ -2,9 +2,11 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace ClangSharp.UnitTests;
 
+[Platform("win")]
 public sealed class XmlCompatibleWindows_EnumDeclarationTest : EnumDeclarationTest
 {
     protected override Task BasicTestImpl()
@@ -85,8 +87,6 @@ public sealed class XmlCompatibleWindows_EnumDeclarationTest : EnumDeclarationTe
 ";
 
         var expectedOutputContents = string.Empty;
-
-        var excludedNames = new string[] { "MyEnum" };
         return ValidateGeneratedXmlCompatibleWindowsBindingsAsync(inputContents, expectedOutputContents, excludedNames: ExcludeTestExcludedNames);
     }
 
@@ -228,7 +228,7 @@ enum MyEnum2 : int
 
         var withAttributes = new Dictionary<string, IReadOnlyList<string>>
         {
-            ["MyEnum1"] = new List<string>() { "Flags" }
+            ["MyEnum1"] = ["Flags"]
         };
         return ValidateGeneratedXmlCompatibleWindowsBindingsAsync(inputContents, expectedOutputContents, withAttributes: withAttributes);
     }
@@ -273,7 +273,7 @@ enum MyEnum2 : int
 
         var withNamespaces = new Dictionary<string, IReadOnlyList<string>>
         {
-            ["MyEnum1"] = new List<string>() { "static ClangSharp.Test.MyEnum1" }
+            ["MyEnum1"] = ["static ClangSharp.Test.MyEnum1"]
         };
         return ValidateGeneratedXmlCompatibleWindowsBindingsAsync(inputContents, expectedOutputContents, withUsings: withNamespaces);
     }
@@ -318,7 +318,7 @@ enum MyEnum2 : int
 
         var withNamespaces = new Dictionary<string, IReadOnlyList<string>>
         {
-            ["*"] = new List<string>() { "static ClangSharp.Test.MyEnum1" }
+            ["*"] = ["static ClangSharp.Test.MyEnum1"]
         };
         return ValidateGeneratedXmlCompatibleWindowsBindingsAsync(inputContents, expectedOutputContents, withUsings: withNamespaces);
     }
@@ -363,8 +363,8 @@ enum MyEnum2 : int
 
         var withNamespaces = new Dictionary<string, IReadOnlyList<string>>
         {
-            ["*"] = new List<string>() { "static ClangSharp.Test.MyEnum1" },
-            ["MyEnum2"] = new List<string>() { "System" }
+            ["*"] = ["static ClangSharp.Test.MyEnum1"],
+            ["MyEnum2"] = ["System"]
         };
         return ValidateGeneratedXmlCompatibleWindowsBindingsAsync(inputContents, expectedOutputContents, withUsings: withNamespaces);
     }

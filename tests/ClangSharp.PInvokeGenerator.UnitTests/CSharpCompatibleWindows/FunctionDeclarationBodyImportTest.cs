@@ -1,9 +1,11 @@
 // Copyright (c) .NET Foundation and Contributors. All Rights Reserved. Licensed under the MIT License (MIT). See License.md in the repository root for more information.
 
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace ClangSharp.UnitTests;
 
+[Platform("win")]
 public sealed class CSharpCompatibleWindows_FunctionDeclarationBodyImportTest : FunctionDeclarationBodyImportTest
 {
     protected override Task ArraySubscriptTestImpl()
@@ -1444,7 +1446,7 @@ void MyFunction()
 namespace ClangSharp.Test
 {
     [StructLayout(LayoutKind.Explicit)]
-    public partial struct MyUnion
+    public unsafe partial struct MyUnion
     {
         [FieldOffset(0)]
         [NativeTypeName(""__AnonymousRecord_ClangUnsavedFile_L3_C5"")]

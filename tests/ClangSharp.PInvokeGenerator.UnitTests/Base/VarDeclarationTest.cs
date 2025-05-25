@@ -7,8 +7,8 @@ namespace ClangSharp.UnitTests;
 
 public abstract class VarDeclarationTest : PInvokeGeneratorTest
 {
-    protected static readonly string[] GuidMacroTestExcludedNames = new[] { "GUID" };
-    protected static readonly string[] UncheckedConversionMacroTest2ExcludedNames = new string[] { "MyMacro1", "MyMacro2" };
+    protected static readonly string[] GuidMacroTestExcludedNames = ["GUID"];
+    protected static readonly string[] UncheckedConversionMacroTest2ExcludedNames = ["MyMacro1", "MyMacro2"];
 
     [TestCase("double", "double")]
     [TestCase("short", "short")]
@@ -31,6 +31,7 @@ public abstract class VarDeclarationTest : PInvokeGeneratorTest
     [TestCase("0U", "uint", "0U")]
     [TestCase("0LL", "long", "0L")]
     [TestCase("0ULL", "ulong", "0UL")]
+    [TestCase("0LLU", "ulong", "0UL")]
     [TestCase("0.0", "double", "0.0")]
     [TestCase("0.f", "float", "0.0f")]
     public Task MacroTest(string nativeValue, string expectedManagedType, string expectedManagedValue) => MacroTestImpl(nativeValue, expectedManagedType, expectedManagedValue);
