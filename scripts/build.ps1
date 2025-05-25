@@ -4,7 +4,6 @@ Param(
   [switch] $build,
   [ValidateSet("Debug", "Release")][string] $configuration = "Debug",
   [switch] $help,
-  [switch] $pack,
   [switch] $restore,
   [string] $solution = "",
   [switch] $test,
@@ -42,7 +41,6 @@ function Help() {
     Write-Host -Object "  -restore                Restore dependencies"
     Write-Host -Object "  -build                  Build solution"
     Write-Host -Object "  -test                   Run all tests in the solution"
-    Write-Host -Object "  -pack                   Package build artifacts"
     Write-Host -Object ""
     Write-Host -Object "Advanced settings:"
     Write-Host -Object "  -solution <value>       Path to solution to build"
@@ -179,10 +177,6 @@ try {
 
   if ($testwin32metadata) {
     Test-Win32Metadata
-  }
-
-  if ($pack) {
-    Pack
   }
 }
 catch {

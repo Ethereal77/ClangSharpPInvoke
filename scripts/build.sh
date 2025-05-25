@@ -12,7 +12,6 @@ architecture=''
 build=false
 configuration='Debug'
 help=false
-pack=false
 restore=false
 solution=''
 test=false
@@ -36,10 +35,6 @@ while [[ $# -gt 0 ]]; do
       ;;
     --help)
       help=true
-      shift 1
-      ;;
-    --pack)
-      pack=true
       shift 1
       ;;
     --restore)
@@ -99,30 +94,12 @@ function Help {
   echo "  --restore                 Restore dependencies"
   echo "  --build                   Build solution"
   echo "  --test                    Run all tests in the solution"
-  echo "  --pack                    Package build artifacts"
   echo ""
   echo "Advanced settings:"
   echo "  --solution <value>        Path to solution to build"
   echo "  --architecture <value>    Test Architecture (<auto>, amd64, x64, x86, arm64, arm)"
   echo ""
   echo "Command line arguments not listed above are passed through to MSBuild."
-}
-
-function Pack {
-  logFile="$LogDir/$configuration/pack.binlog"
-
-  if [[ -z "$properties" ]]; then
-    dotnet pack -c "$configuration" --no-build --no-restore -v "$verbosity" /bl:"$logFile" /err "$solution"
-  else
-    dotnet pack -c "$configuration" --no-build --no-restore -v "$verbosity" /bl:"$logFile" /err "${properties[@]}" "$solution"
-  fi
-
-  LASTEXITCODE=$?
-
-  if [ "$LASTEXITCODE" != 0 ]; then
-    echo "'Build' failed for '$solution'"
-    return "$LASTEXITCODE"
-  fi
 }
 
 function Restore {
@@ -210,14 +187,6 @@ fi
 
 if $test; then
   Test
-
-  if [ "$LASTEXITCODE" != 0 ]; then
-    return "$LASTEXITCODE"
-  fi
-fi
-
-if $pack; then
-  Pack
 
   if [ "$LASTEXITCODE" != 0 ]; then
     return "$LASTEXITCODE"
