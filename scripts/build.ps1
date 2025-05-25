@@ -2,7 +2,6 @@
 Param(
   [ValidateSet("<auto>", "amd64", "x64", "x86", "arm64", "arm")][string] $architecture = "",
   [switch] $build,
-  [switch] $ci,
   [ValidateSet("Debug", "Release")][string] $configuration = "Debug",
   [switch] $help,
   [switch] $pack,
@@ -47,7 +46,6 @@ function Help() {
     Write-Host -Object ""
     Write-Host -Object "Advanced settings:"
     Write-Host -Object "  -solution <value>       Path to solution to build"
-    Write-Host -Object "  -ci                     Set when running on CI server"
     Write-Host -Object "  -architecture <value>   Test Architecture (<auto>, amd64, x64, x86, arm64, arm)"
     Write-Host -Object "  -testwin32metadata      Test Win32Metadata to ensure it has not regressed"
     Write-Host -Object ""
@@ -135,17 +133,7 @@ try {
     exit 0
   }
 
-  if ($ci) {
-    $build = $true
-    $pack = $true
-    $restore = $true
-    $test = $true
-
-    if ($architecture -eq "") {
-      $architecture = "<auto>"
-    }
-  }
-  elseif (($architecture -ne "") -and ($architecture -ne "<auto>")) {
+  if (($architecture -ne "") -and ($architecture -ne "<auto>")) {
     $properties += "/p:PlatformTarget=$architecture"
   }
 

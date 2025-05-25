@@ -10,7 +10,6 @@ ScriptRoot="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 architecture=''
 build=false
-ci=false
 configuration='Debug'
 help=false
 pack=false
@@ -29,10 +28,6 @@ while [[ $# -gt 0 ]]; do
       ;;
     --build)
       build=true
-      shift 1
-      ;;
-    --ci)
-      ci=true
       shift 1
       ;;
     --configuration)
@@ -108,7 +103,6 @@ function Help {
   echo ""
   echo "Advanced settings:"
   echo "  --solution <value>        Path to solution to build"
-  echo "  --ci                      Set when running on CI server"
   echo "  --architecture <value>    Test Architecture (<auto>, amd64, x64, x86, arm64, arm)"
   echo ""
   echo "Command line arguments not listed above are passed through to MSBuild."
@@ -168,17 +162,6 @@ function Test {
 if $help; then
   Help
   exit 0
-fi
-
-if $ci; then
-  build=true
-  pack=true
-  restore=true
-  test=true
-
-  if [[ -z "$architecture" ]]; then
-    architecture="<auto>"
-  fi
 fi
 
 RepoRoot="$ScriptRoot/.."
