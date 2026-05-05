@@ -2,9 +2,11 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace ClangSharp.UnitTests;
 
+[Platform("unix")]
 public sealed class XmlPreviewUnix_EnumDeclarationTest : EnumDeclarationTest
 {
     protected override Task BasicTestImpl()
@@ -85,8 +87,6 @@ public sealed class XmlPreviewUnix_EnumDeclarationTest : EnumDeclarationTest
 ";
 
         var expectedOutputContents = string.Empty;
-
-        var excludedNames = new string[] { "MyEnum" };
         return ValidateGeneratedXmlPreviewUnixBindingsAsync(inputContents, expectedOutputContents, excludedNames: ExcludeTestExcludedNames);
     }
 
@@ -228,7 +228,7 @@ enum MyEnum2 : int
 
         var withAttributes = new Dictionary<string, IReadOnlyList<string>>
         {
-            ["MyEnum1"] = new List<string>() { "Flags" }
+            ["MyEnum1"] = ["Flags"]
         };
         return ValidateGeneratedXmlPreviewUnixBindingsAsync(inputContents, expectedOutputContents, withAttributes: withAttributes);
     }
@@ -273,7 +273,7 @@ enum MyEnum2 : int
 
         var withNamespaces = new Dictionary<string, IReadOnlyList<string>>
         {
-            ["MyEnum1"] = new List<string>() { "static ClangSharp.Test.MyEnum1" }
+            ["MyEnum1"] = ["static ClangSharp.Test.MyEnum1"]
         };
         return ValidateGeneratedXmlPreviewUnixBindingsAsync(inputContents, expectedOutputContents, withUsings: withNamespaces);
     }
@@ -318,7 +318,7 @@ enum MyEnum2 : int
 
         var withNamespaces = new Dictionary<string, IReadOnlyList<string>>
         {
-            ["*"] = new List<string>() { "static ClangSharp.Test.MyEnum1" }
+            ["*"] = ["static ClangSharp.Test.MyEnum1"]
         };
         return ValidateGeneratedXmlPreviewUnixBindingsAsync(inputContents, expectedOutputContents, withUsings: withNamespaces);
     }
@@ -363,8 +363,8 @@ enum MyEnum2 : int
 
         var withNamespaces = new Dictionary<string, IReadOnlyList<string>>
         {
-            ["*"] = new List<string>() { "static ClangSharp.Test.MyEnum1" },
-            ["MyEnum2"] = new List<string>() { "System" }
+            ["*"] = ["static ClangSharp.Test.MyEnum1"],
+            ["MyEnum2"] = ["System"]
         };
         return ValidateGeneratedXmlPreviewUnixBindingsAsync(inputContents, expectedOutputContents, withUsings: withNamespaces);
     }
@@ -680,7 +680,7 @@ enum MyEnum2 : int
     </enumeration>
     <class name=""Methods"" access=""public"" static=""true"">
       <constant name=""MyEnum1_Value1"" access=""public"">
-        <type primitive=""True"">int</type>
+        <type primitive=""True"">uint</type>
         <value>
           <code>1</code>
         </value>
@@ -709,7 +709,7 @@ const int MyEnum2_Value1 = MyEnum1_Value1 + 1;
   <namespace name=""ClangSharp.Test"">
     <class name=""Methods"" access=""public"" static=""true"">
       <constant name=""MyEnum1_Value1"" access=""public"">
-        <type primitive=""True"">int</type>
+        <type primitive=""True"">uint</type>
         <value>
           <code>1</code>
         </value>

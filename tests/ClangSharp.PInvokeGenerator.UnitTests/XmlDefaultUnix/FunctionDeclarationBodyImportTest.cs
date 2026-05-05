@@ -1,9 +1,11 @@
 // Copyright (c) .NET Foundation and Contributors. All Rights Reserved. Licensed under the MIT License (MIT). See License.md in the repository root for more information.
 
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace ClangSharp.UnitTests;
 
+[Platform("unix")]
 public sealed class XmlDefaultUnix_FunctionDeclarationBodyImportTest : FunctionDeclarationBodyImportTest
 {
     protected override Task ArraySubscriptTestImpl()
@@ -1616,7 +1618,7 @@ void MyFunction()
       <field name=""a"" access=""public"">
         <type>ref int</type>
         <get>
-          <code>return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.a, 1));</code>
+          <code>return ref Anonymous.a;</code>
         </get>
       </field>
       <struct name=""_Anonymous_e__Struct"" access=""public"">

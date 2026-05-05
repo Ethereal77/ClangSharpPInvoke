@@ -3,148 +3,45 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace ClangSharp.UnitTests;
 
-public sealed class CSharpCompatibleUnix_CXXMethodDeclarationTest : CXXMethodDeclarationTest
+[Platform("unix")]
+public sealed class CSharpCompatibleUnix_CXXMethodDeclarationTest : CXXMethodDeclarationCSharpTest
 {
-    protected override Task ConstructorTestImpl()
+    protected override Task DefaultParameterInheritedFromTemplateTestImpl()
     {
-        var inputContents = @"struct MyStruct
+        // NOTE: This is a regression test where a struct inherits a function from a template with a default parameter.
+        const string InputContents = @"template <typename T>
+struct MyTemplate
 {
-    int _value;
-
-    MyStruct(int value)
-    {
-        _value = value;
-    }
-};
-";
-
-        var expectedOutputContents = @"namespace ClangSharp.Test
-{
-    public partial struct MyStruct
-    {
-        public int _value;
-
-        public MyStruct(int value)
-        {
-            _value = value;
-        }
-    }
-}
-";
-
-        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
-    }
-
-    protected override Task ConstructorWithInitializeTestImpl()
-    {
-        var inputContents = @"struct MyStruct
-{
-    int _x;
-    int _y;
-    int _z;
-
-    MyStruct(int x) : _x(x)
-    {
-    }
-
-    MyStruct(int x, int y) : _x(x), _y(y)
-    {
-    }
-
-    MyStruct(int x, int y, int z) : _x(x), _y(y), _z()
-    {
-    }
-};
-";
-
-        var expectedOutputContents = @"namespace ClangSharp.Test
-{
-    public partial struct MyStruct
-    {
-        public int _x;
-
-        public int _y;
-
-        public int _z;
-
-        public MyStruct(int x)
-        {
-            _x = x;
-        }
-
-        public MyStruct(int x, int y)
-        {
-            _x = x;
-            _y = y;
-        }
-
-        public MyStruct(int x, int y, int z)
-        {
-            _x = x;
-            _y = y;
-        }
-    }
-}
-";
-
-        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
-    }
-
-    protected override Task ConversionTestImpl()
-    {
-        var inputContents = @"struct MyStruct
-{
-    int value;
-
-    operator int()
+    int* DoWork(int* value = nullptr)
     {
         return value;
     }
 };
+
+struct MyStruct : public MyTemplate<int>
+{};
 ";
 
-        var expectedOutputContents = @"namespace ClangSharp.Test
-{
-    public partial struct MyStruct
-    {
-        public int value;
+        var entryPoint = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "__ZN8$MyTemplateDoWorkEv" : "_ZN10MyTemplateIiE6DoWorkEPi";
 
-        public int ToInt32()
-        {
-            return value;
-        }
-    }
-}
+        var expectedOutputContents = $@"using System.Runtime.InteropServices;
+
+namespace ClangSharp.Test
+{{
+    [NativeTypeName(""struct MyStruct : MyTemplate<int>"")]
+    public unsafe partial struct MyStruct
+    {{
+        [DllImport(""ClangSharpPInvokeGenerator"", CallingConvention = CallingConvention.ThisCall, EntryPoint = ""{entryPoint}"", ExactSpelling = true)]
+        public static extern int* DoWork(MyStruct* pThis, int* value = null);
+    }}
+}}
 ";
 
-        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
-    }
-
-    protected override Task DestructorTestImpl()
-    {
-        var inputContents = @"struct MyStruct
-{
-    ~MyStruct()
-    {
-    }
-};
-";
-
-        var expectedOutputContents = @"namespace ClangSharp.Test
-{
-    public partial struct MyStruct
-    {
-        public void Dispose()
-        {
-        }
-    }
-}
-";
-
-        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(InputContents, expectedOutputContents);
     }
 
     protected override Task InstanceTestImpl()
@@ -203,209 +100,6 @@ namespace ClangSharp.Test
         return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
-    protected override Task MemberCallTestImpl()
-    {
-        var inputContents = @"struct MyStruct
-{
-    int value;
-
-    int MyFunction1()
-    {
-        return value;
-    }
-
-    int MyFunction2()
-    {
-        return MyFunction1();
-    }
-
-    int MyFunction3()
-    {
-        return this->MyFunction1();
-    }
-};
-
-int MyFunctionA(MyStruct x)
-{
-    return x.MyFunction1();
-}
-
-int MyFunctionB(MyStruct* x)
-{
-    return x->MyFunction2();
-}
-";
-
-        var expectedOutputContents = @"namespace ClangSharp.Test
-{
-    public partial struct MyStruct
-    {
-        public int value;
-
-        public int MyFunction1()
-        {
-            return value;
-        }
-
-        public int MyFunction2()
-        {
-            return MyFunction1();
-        }
-
-        public int MyFunction3()
-        {
-            return this.MyFunction1();
-        }
-    }
-
-    public static unsafe partial class Methods
-    {
-        public static int MyFunctionA(MyStruct x)
-        {
-            return x.MyFunction1();
-        }
-
-        public static int MyFunctionB(MyStruct* x)
-        {
-            return x->MyFunction2();
-        }
-    }
-}
-";
-
-        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
-    }
-
-    protected override Task MemberTestImpl()
-    {
-        var inputContents = @"struct MyStruct
-{
-    int value;
-
-    int MyFunction()
-    {
-        return value;
-    }
-};
-";
-
-        var expectedOutputContents = @"namespace ClangSharp.Test
-{
-    public partial struct MyStruct
-    {
-        public int value;
-
-        public int MyFunction()
-        {
-            return value;
-        }
-    }
-}
-";
-
-        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
-    }
-
-    protected override Task NewKeywordTestImpl()
-    {
-        var inputContents = @"struct MyStruct
-{
-    int Equals() { return 0; }
-    int Equals(int obj) { return 0; }
-    int Dispose() { return 0; }
-    int Dispose(int obj) { return 0; }
-    int GetHashCode() { return 0; }
-    int GetHashCode(int obj) { return 0; }
-    int GetType() { return 0; }
-    int GetType(int obj) { return 0; }
-    int MemberwiseClone() { return 0; }
-    int MemberwiseClone(int obj) { return 0; }
-    int ReferenceEquals() { return 0; }
-    int ReferenceEquals(int obj) { return 0; }
-    int ToString() { return 0; }
-    int ToString(int obj) { return 0; }
-};";
-
-        var expectedOutputContents = $@"namespace ClangSharp.Test
-{{
-    public partial struct MyStruct
-    {{
-        public int Equals()
-        {{
-            return 0;
-        }}
-
-        public int Equals(int obj)
-        {{
-            return 0;
-        }}
-
-        public int Dispose()
-        {{
-            return 0;
-        }}
-
-        public int Dispose(int obj)
-        {{
-            return 0;
-        }}
-
-        public new int GetHashCode()
-        {{
-            return 0;
-        }}
-
-        public int GetHashCode(int obj)
-        {{
-            return 0;
-        }}
-
-        public new int GetType()
-        {{
-            return 0;
-        }}
-
-        public int GetType(int obj)
-        {{
-            return 0;
-        }}
-
-        public new int MemberwiseClone()
-        {{
-            return 0;
-        }}
-
-        public int MemberwiseClone(int obj)
-        {{
-            return 0;
-        }}
-
-        public int ReferenceEquals()
-        {{
-            return 0;
-        }}
-
-        public int ReferenceEquals(int obj)
-        {{
-            return 0;
-        }}
-
-        public new int ToString()
-        {{
-            return 0;
-        }}
-
-        public int ToString(int obj)
-        {{
-            return 0;
-        }}
-    }}
-}}
-";
-
-        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
-    }
-
     protected override Task NewKeywordVirtualTestImpl()
     {
         var inputContents = @"struct MyStruct
@@ -425,19 +119,19 @@ namespace ClangSharp.Test
         public void** lpVtbl;
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        public delegate int _GetType(MyStruct* pThis, int objA, int objB);
+        public delegate int _GetType(MyStruct* pThis, int obj);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         public delegate int _GetType1(MyStruct* pThis);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        public delegate int _GetType2(MyStruct* pThis, int obj);
+        public delegate int _GetType2(MyStruct* pThis, int objA, int objB);
 
-        public int GetType(int objA, int objB)
+        public int GetType(int obj)
         {{
             fixed (MyStruct* pThis = &this)
             {{
-                return Marshal.GetDelegateForFunctionPointer<_GetType>((IntPtr)(lpVtbl[0]))(pThis, objA, objB);
+                return Marshal.GetDelegateForFunctionPointer<_GetType>((IntPtr)(lpVtbl[0]))(pThis, obj);
             }}
         }}
 
@@ -449,11 +143,11 @@ namespace ClangSharp.Test
             }}
         }}
 
-        public int GetType(int obj)
+        public int GetType(int objA, int objB)
         {{
             fixed (MyStruct* pThis = &this)
             {{
-                return Marshal.GetDelegateForFunctionPointer<_GetType2>((IntPtr)(lpVtbl[2]))(pThis, obj);
+                return Marshal.GetDelegateForFunctionPointer<_GetType2>((IntPtr)(lpVtbl[2]))(pThis, objA, objB);
             }}
         }}
     }}
@@ -489,19 +183,19 @@ namespace ClangSharp.Test
         public Vtbl* lpVtbl;
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        public delegate int _GetType(MyStruct* pThis, int objA, int objB);
+        public delegate int _GetType(MyStruct* pThis, int obj);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         public delegate int _GetType1(MyStruct* pThis);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        public delegate int _GetType2(MyStruct* pThis, int obj);
+        public delegate int _GetType2(MyStruct* pThis, int objA, int objB);
 
-        public int GetType(int objA, int objB)
+        public int GetType(int obj)
         {{
             fixed (MyStruct* pThis = &this)
             {{
-                return Marshal.GetDelegateForFunctionPointer<_GetType>(lpVtbl->GetType)(pThis, objA, objB);
+                return Marshal.GetDelegateForFunctionPointer<_GetType>(lpVtbl->GetType)(pThis, obj);
             }}
         }}
 
@@ -513,23 +207,23 @@ namespace ClangSharp.Test
             }}
         }}
 
-        public int GetType(int obj)
+        public int GetType(int objA, int objB)
         {{
             fixed (MyStruct* pThis = &this)
             {{
-                return Marshal.GetDelegateForFunctionPointer<_GetType2>(lpVtbl->GetType2)(pThis, obj);
+                return Marshal.GetDelegateForFunctionPointer<_GetType2>(lpVtbl->GetType2)(pThis, objA, objB);
             }}
         }}
 
         public partial struct Vtbl
         {{
-            [NativeTypeName(""int (int, int){nativeCallConv}"")]
+            [NativeTypeName(""int (int){nativeCallConv}"")]
             public new IntPtr GetType;
 
             [NativeTypeName(""int (){nativeCallConv}"")]
             public IntPtr GetType1;
 
-            [NativeTypeName(""int (int){nativeCallConv}"")]
+            [NativeTypeName(""int (int, int){nativeCallConv}"")]
             public IntPtr GetType2;
         }}
     }}
@@ -565,19 +259,19 @@ namespace ClangSharp.Test
         public Vtbl* lpVtbl;
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        public delegate int _GetType(MyStruct* pThis, int objA, int objB);
+        public delegate int _GetType(MyStruct* pThis, int obj);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         public delegate int _GetType1(MyStruct* pThis);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        public delegate int _GetType2(MyStruct* pThis, int obj);
+        public delegate int _GetType2(MyStruct* pThis, int objA, int objB);
 
-        public int GetType(int objA, int objB)
+        public int GetType(int obj)
         {{
             fixed (MyStruct* pThis = &this)
             {{
-                return Marshal.GetDelegateForFunctionPointer<_GetType>(lpVtbl->GetType)(pThis, objA, objB);
+                return Marshal.GetDelegateForFunctionPointer<_GetType>(lpVtbl->GetType)(pThis, obj);
             }}
         }}
 
@@ -589,32 +283,32 @@ namespace ClangSharp.Test
             }}
         }}
 
-        public int GetType(int obj)
+        public int GetType(int objA, int objB)
         {{
             fixed (MyStruct* pThis = &this)
             {{
-                return Marshal.GetDelegateForFunctionPointer<_GetType2>(lpVtbl->GetType2)(pThis, obj);
+                return Marshal.GetDelegateForFunctionPointer<_GetType2>(lpVtbl->GetType2)(pThis, objA, objB);
             }}
         }}
 
         public interface Interface
         {{
-            int GetType(int objA, int objB);
+            int GetType(int obj);
 
             int GetType();
 
-            int GetType(int obj);
+            int GetType(int objA, int objB);
         }}
 
         public partial struct Vtbl
         {{
-            [NativeTypeName(""int (int, int){nativeCallConv}"")]
+            [NativeTypeName(""int (int){nativeCallConv}"")]
             public new IntPtr GetType;
 
             [NativeTypeName(""int (){nativeCallConv}"")]
             public IntPtr GetType1;
 
-            [NativeTypeName(""int (int){nativeCallConv}"")]
+            [NativeTypeName(""int (int, int){nativeCallConv}"")]
             public IntPtr GetType2;
         }}
     }}
@@ -622,130 +316,6 @@ namespace ClangSharp.Test
 ";
 
         return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents, PInvokeGeneratorConfigurationOptions.GenerateExplicitVtbls | PInvokeGeneratorConfigurationOptions.GenerateMarkerInterfaces);
-    }
-
-    protected override Task OperatorTestImpl()
-    {
-        var inputContents = @"struct MyStruct
-{
-    int value;
-
-    MyStruct(int value) : value(value)
-    {
-    }
-
-    MyStruct operator+(MyStruct rhs)
-    {
-        return MyStruct(value + rhs.value);
-    }
-};
-
-MyStruct operator-(MyStruct lhs, MyStruct rhs)
-{
-    return MyStruct(lhs.value - rhs.value);
-}
-";
-
-        var expectedOutputContents = @"namespace ClangSharp.Test
-{
-    public partial struct MyStruct
-    {
-        public int value;
-
-        public MyStruct(int value)
-        {
-            this.value = value;
-        }
-
-        public MyStruct Add(MyStruct rhs)
-        {
-            return new MyStruct(value + rhs.value);
-        }
-    }
-
-    public static partial class Methods
-    {
-        public static MyStruct Subtract(MyStruct lhs, MyStruct rhs)
-        {
-            return new MyStruct(lhs.value - rhs.value);
-        }
-    }
-}
-";
-
-        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
-    }
-
-    protected override Task OperatorCallTestImpl()
-    {
-        var inputContents = @"struct MyStruct
-{
-    int value;
-
-    MyStruct(int value) : value(value)
-    {
-    }
-
-    MyStruct operator+(MyStruct rhs)
-    {
-        return MyStruct(value + rhs.value);
-    }
-};
-
-MyStruct MyFunction1(MyStruct lhs, MyStruct rhs)
-{
-    return lhs + rhs;
-}
-
-MyStruct operator-(MyStruct lhs, MyStruct rhs)
-{
-    return MyStruct(lhs.value - rhs.value);
-}
-
-MyStruct MyFunction2(MyStruct lhs, MyStruct rhs)
-{
-    return lhs - rhs;
-}
-";
-
-        var expectedOutputContents = @"namespace ClangSharp.Test
-{
-    public partial struct MyStruct
-    {
-        public int value;
-
-        public MyStruct(int value)
-        {
-            this.value = value;
-        }
-
-        public MyStruct Add(MyStruct rhs)
-        {
-            return new MyStruct(value + rhs.value);
-        }
-    }
-
-    public static partial class Methods
-    {
-        public static MyStruct MyFunction1(MyStruct lhs, MyStruct rhs)
-        {
-            return lhs.Add(rhs);
-        }
-
-        public static MyStruct Subtract(MyStruct lhs, MyStruct rhs)
-        {
-            return new MyStruct(lhs.value - rhs.value);
-        }
-
-        public static MyStruct MyFunction2(MyStruct lhs, MyStruct rhs)
-        {
-            return Subtract(lhs, rhs);
-        }
-    }
-}
-";
-
-        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task StaticTestImpl()
@@ -798,78 +368,13 @@ namespace ClangSharp.Test
         return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
-    protected override Task ThisTestImpl()
-    {
-        var inputContents = @"struct MyStruct
-{
-    int value;
-
-    int MyFunction()
-    {
-        return this->value;
-    }
-};
-";
-
-        var expectedOutputContents = @"namespace ClangSharp.Test
-{
-    public partial struct MyStruct
-    {
-        public int value;
-
-        public int MyFunction()
-        {
-            return this.value;
-        }
-    }
-}
-";
-
-        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
-    }
-
-    protected override Task UnsafeDoesNotImpactDllImportTestImpl()
-    {
-        var inputContents = @"struct MyStruct
-{
-    void* MyVoidStarMethod()
-    {
-        return nullptr;
-    }
-};
-
-extern ""C"" void MyFunction();";
-
-        var expectedOutputContents = @"using System.Runtime.InteropServices;
-
-namespace ClangSharp.Test
-{
-    public unsafe partial struct MyStruct
-    {
-        public void* MyVoidStarMethod()
-        {
-            return null;
-        }
-    }
-
-    public static partial class Methods
-    {
-        [DllImport(""ClangSharpPInvokeGenerator"", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void MyFunction();
-    }
-}
-";
-
-        return ValidateGeneratedCSharpCompatibleUnixBindingsAsync(inputContents, expectedOutputContents);
-    }
-
     protected override Task VirtualTestImpl()
     {
         var inputContents = @"struct MyStruct
 {
     virtual void MyVoidMethod() = 0;
 
-    virtual char MyInt8Method()
+    virtual signed char MyInt8Method()
     {
         return 0;
     }
@@ -893,7 +398,7 @@ namespace ClangSharp.Test
         public delegate void _MyVoidMethod(MyStruct* pThis);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        [return: NativeTypeName(""char"")]
+        [return: NativeTypeName(""signed char"")]
         public delegate sbyte _MyInt8Method(MyStruct* pThis);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
@@ -910,7 +415,7 @@ namespace ClangSharp.Test
             }}
         }}
 
-        [return: NativeTypeName(""char"")]
+        [return: NativeTypeName(""signed char"")]
         public sbyte MyInt8Method()
         {{
             fixed (MyStruct* pThis = &this)
@@ -947,7 +452,7 @@ namespace ClangSharp.Test
 {
     virtual void MyVoidMethod() = 0;
 
-    virtual char MyInt8Method()
+    virtual signed char MyInt8Method()
     {
         return 0;
     }
@@ -971,7 +476,7 @@ namespace ClangSharp.Test
         public delegate void _MyVoidMethod(MyStruct* pThis);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        [return: NativeTypeName(""char"")]
+        [return: NativeTypeName(""signed char"")]
         public delegate sbyte _MyInt8Method(MyStruct* pThis);
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
@@ -990,7 +495,7 @@ namespace ClangSharp.Test
         }}
 
         [VtblIndex(1)]
-        [return: NativeTypeName(""char"")]
+        [return: NativeTypeName(""signed char"")]
         public sbyte MyInt8Method()
         {{
             fixed (MyStruct* pThis = &this)

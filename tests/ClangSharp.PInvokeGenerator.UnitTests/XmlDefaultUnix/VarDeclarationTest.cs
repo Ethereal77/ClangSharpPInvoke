@@ -2,9 +2,11 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace ClangSharp.UnitTests;
 
+[Platform("unix")]
 public sealed class XmlDefaultUnix_VarDeclarationTest : VarDeclarationTest
 {
     protected override Task BasicTestImpl(string nativeType, string expectedManagedType)
@@ -26,7 +28,7 @@ public sealed class XmlDefaultUnix_VarDeclarationTest : VarDeclarationTest
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task BasicWithNativeTypeNameTestImpl(string nativeType, string expectedManagedType)
@@ -48,7 +50,7 @@ public sealed class XmlDefaultUnix_VarDeclarationTest : VarDeclarationTest
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task GuidMacroTestImpl()
@@ -79,7 +81,7 @@ const GUID IID_IUnknown = {{ 0x00000000, 0x0000, 0x0000, {{ 0xC0, 0x00, 0x00, 0x
 ";
 
         var remappedNames = new Dictionary<string, string> { ["GUID"] = "Guid" };
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents, excludedNames: GuidMacroTestExcludedNames, remappedNames: remappedNames);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents, excludedNames: GuidMacroTestExcludedNames, remappedNames: remappedNames);
     }
 
     protected override Task MacroTestImpl(string nativeValue, string expectedManagedType, string expectedManagedValue)
@@ -108,7 +110,7 @@ const GUID IID_IUnknown = {{ 0x00000000, 0x0000, 0x0000, {{ 0xC0, 0x00, 0x00, 0x
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task MultilineMacroTestImpl()
@@ -131,19 +133,19 @@ const GUID IID_IUnknown = {{ 0x00000000, 0x0000, 0x0000, {{ 0xC0, 0x00, 0x00, 0x
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task NoInitializerTestImpl(string nativeType)
     {
         var inputContents = $@"{nativeType} MyVariable;";
         var expectedOutputContents = "";
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task Utf8StringLiteralMacroTestImpl()
     {
-        var inputContents = $@"#define MyMacro1 ""Test""";
+        var inputContents = $@"#define MyMacro1 ""Test\0\\\r\n\t\""""";
 
         var expectedOutputContents = $@"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
 <bindings>
@@ -152,7 +154,7 @@ const GUID IID_IUnknown = {{ 0x00000000, 0x0000, 0x0000, {{ 0xC0, 0x00, 0x00, 0x
       <constant name=""MyMacro1"" access=""public"">
         <type primitive=""False"">ReadOnlySpan&lt;byte&gt;</type>
         <value>
-          <code>new byte[] {{ 0x54, 0x65, 0x73, 0x74, 0x00 }}</code>
+          <code>""Test\0\\\r\n\t\""""u8</code>
         </value>
       </constant>
     </class>
@@ -160,12 +162,12 @@ const GUID IID_IUnknown = {{ 0x00000000, 0x0000, 0x0000, {{ 0xC0, 0x00, 0x00, 0x
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task Utf16StringLiteralMacroTestImpl()
     {
-        var inputContents = $@"#define MyMacro1 u""Test""";
+        var inputContents = $@"#define MyMacro1 u""Test\0\\\r\n\t\""""";
 
         var expectedOutputContents = $@"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
 <bindings>
@@ -174,7 +176,7 @@ const GUID IID_IUnknown = {{ 0x00000000, 0x0000, 0x0000, {{ 0xC0, 0x00, 0x00, 0x
       <constant name=""MyMacro1"" access=""public"">
         <type primitive=""True"">string</type>
         <value>
-          <code>""Test""</code>
+          <code>""Test\0\\\r\n\t\""""</code>
         </value>
       </constant>
     </class>
@@ -182,35 +184,35 @@ const GUID IID_IUnknown = {{ 0x00000000, 0x0000, 0x0000, {{ 0xC0, 0x00, 0x00, 0x
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task WideStringLiteralConstTestImpl()
     {
-        var inputContents = $@"const wchar_t MyConst1[] = L""Test"";
-const wchar_t* MyConst2 = L""Test"";
-const wchar_t* const MyConst3 = L""Test"";";
+        var inputContents = $@"const wchar_t MyConst1[] = L""Test\0\\\r\n\t\"""";
+const wchar_t* MyConst2 = L""Test\0\\\r\n\t\"""";
+const wchar_t* const MyConst3 = L""Test\0\\\r\n\t\"""";";
 
         var expectedOutputContents = $@"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
 <bindings>
   <namespace name=""ClangSharp.Test"">
     <class name=""Methods"" access=""public"" static=""true"">
       <constant name=""MyConst1"" access=""public"">
-        <type primitive=""False"">uint[]</type>
+        <type primitive=""False"">ReadOnlySpan&lt;uint&gt;</type>
         <value>
-          <code>new uint[] {{ 0x00000054, 0x00000065, 0x00000073, 0x00000074, 0x00000000 }}</code>
+          <code>[0x00000054, 0x00000065, 0x00000073, 0x00000074, 0x00000000, 0x0000005C, 0x0000000D, 0x0000000A, 0x00000009, 0x00000022, 0x00000000]</code>
         </value>
       </constant>
       <field name=""MyConst2"" access=""public"">
         <type primitive=""False"">uint[]</type>
         <value>
-          <code>new uint[] {{ 0x00000054, 0x00000065, 0x00000073, 0x00000074, 0x00000000 }}</code>
+          <code>[0x00000054, 0x00000065, 0x00000073, 0x00000074, 0x00000000, 0x0000005C, 0x0000000D, 0x0000000A, 0x00000009, 0x00000022, 0x00000000]</code>
         </value>
       </field>
       <constant name=""MyConst3"" access=""public"">
-        <type primitive=""False"">uint[]</type>
+        <type primitive=""False"">ReadOnlySpan&lt;uint&gt;</type>
         <value>
-          <code>new uint[] {{ 0x00000054, 0x00000065, 0x00000073, 0x00000074, 0x00000000 }}</code>
+          <code>[0x00000054, 0x00000065, 0x00000073, 0x00000074, 0x00000000, 0x0000005C, 0x0000000D, 0x0000000A, 0x00000009, 0x00000022, 0x00000000]</code>
         </value>
       </constant>
     </class>
@@ -218,14 +220,14 @@ const wchar_t* const MyConst3 = L""Test"";";
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task StringLiteralConstTestImpl()
     {
-        var inputContents = $@"const char MyConst1[] = ""Test"";
-const char* MyConst2 = ""Test"";
-const char* const MyConst3 = ""Test"";";
+        var inputContents = $@"const char MyConst1[] = ""Test\0\\\r\n\t\"""";
+const char* MyConst2 = ""Test\0\\\r\n\t\"""";
+const char* const MyConst3 = ""Test\0\\\r\n\t\"""";";
 
         var expectedOutputContents = $@"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
 <bindings>
@@ -234,19 +236,19 @@ const char* const MyConst3 = ""Test"";";
       <constant name=""MyConst1"" access=""public"">
         <type primitive=""False"">ReadOnlySpan&lt;byte&gt;</type>
         <value>
-          <code>new byte[] {{ 0x54, 0x65, 0x73, 0x74, 0x00 }}</code>
+          <code>""Test\0\\\r\n\t\""""u8</code>
         </value>
       </constant>
       <field name=""MyConst2"" access=""public"">
         <type primitive=""False"">byte[]</type>
         <value>
-          <code>new byte[] {{ 0x54, 0x65, 0x73, 0x74, 0x00 }}</code>
+          <code>""Test\0\\\r\n\t\""""u8.ToArray()</code>
         </value>
       </field>
       <constant name=""MyConst3"" access=""public"">
         <type primitive=""False"">ReadOnlySpan&lt;byte&gt;</type>
         <value>
-          <code>new byte[] {{ 0x54, 0x65, 0x73, 0x74, 0x00 }}</code>
+          <code>""Test\0\\\r\n\t\""""u8</code>
         </value>
       </constant>
     </class>
@@ -254,35 +256,35 @@ const char* const MyConst3 = ""Test"";";
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task WideStringLiteralStaticConstTestImpl()
     {
-        var inputContents = $@"static const wchar_t MyConst1[] = L""Test"";
-static const wchar_t* MyConst2 = L""Test"";
-static const wchar_t* const MyConst3 = L""Test"";";
+        var inputContents = $@"static const wchar_t MyConst1[] = L""Test\0\\\r\n\t\"""";
+static const wchar_t* MyConst2 = L""Test\0\\\r\n\t\"""";
+static const wchar_t* const MyConst3 = L""Test\0\\\r\n\t\"""";";
 
         var expectedOutputContents = $@"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
 <bindings>
   <namespace name=""ClangSharp.Test"">
     <class name=""Methods"" access=""public"" static=""true"">
       <constant name=""MyConst1"" access=""public"">
-        <type primitive=""False"">uint[]</type>
+        <type primitive=""False"">ReadOnlySpan&lt;uint&gt;</type>
         <value>
-          <code>new uint[] {{ 0x00000054, 0x00000065, 0x00000073, 0x00000074, 0x00000000 }}</code>
+          <code>[0x00000054, 0x00000065, 0x00000073, 0x00000074, 0x00000000, 0x0000005C, 0x0000000D, 0x0000000A, 0x00000009, 0x00000022, 0x00000000]</code>
         </value>
       </constant>
       <field name=""MyConst2"" access=""public"">
         <type primitive=""False"">uint[]</type>
         <value>
-          <code>new uint[] {{ 0x00000054, 0x00000065, 0x00000073, 0x00000074, 0x00000000 }}</code>
+          <code>[0x00000054, 0x00000065, 0x00000073, 0x00000074, 0x00000000, 0x0000005C, 0x0000000D, 0x0000000A, 0x00000009, 0x00000022, 0x00000000]</code>
         </value>
       </field>
       <constant name=""MyConst3"" access=""public"">
-        <type primitive=""False"">uint[]</type>
+        <type primitive=""False"">ReadOnlySpan&lt;uint&gt;</type>
         <value>
-          <code>new uint[] {{ 0x00000054, 0x00000065, 0x00000073, 0x00000074, 0x00000000 }}</code>
+          <code>[0x00000054, 0x00000065, 0x00000073, 0x00000074, 0x00000000, 0x0000005C, 0x0000000D, 0x0000000A, 0x00000009, 0x00000022, 0x00000000]</code>
         </value>
       </constant>
     </class>
@@ -290,14 +292,14 @@ static const wchar_t* const MyConst3 = L""Test"";";
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task StringLiteralStaticConstTestImpl()
     {
-        var inputContents = $@"static const char MyConst1[] = ""Test"";
-static const char* MyConst2 = ""Test"";
-static const char* const MyConst3 = ""Test"";";
+        var inputContents = $@"static const char MyConst1[] = ""Test\0\\\r\n\t\"""";
+static const char* MyConst2 = ""Test\0\\\r\n\t\"""";
+static const char* const MyConst3 = ""Test\0\\\r\n\t\"""";";
 
         var expectedOutputContents = $@"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
 <bindings>
@@ -306,19 +308,19 @@ static const char* const MyConst3 = ""Test"";";
       <constant name=""MyConst1"" access=""public"">
         <type primitive=""False"">ReadOnlySpan&lt;byte&gt;</type>
         <value>
-          <code>new byte[] {{ 0x54, 0x65, 0x73, 0x74, 0x00 }}</code>
+          <code>""Test\0\\\r\n\t\""""u8</code>
         </value>
       </constant>
       <field name=""MyConst2"" access=""public"">
         <type primitive=""False"">byte[]</type>
         <value>
-          <code>new byte[] {{ 0x54, 0x65, 0x73, 0x74, 0x00 }}</code>
+          <code>""Test\0\\\r\n\t\""""u8.ToArray()</code>
         </value>
       </field>
       <constant name=""MyConst3"" access=""public"">
         <type primitive=""False"">ReadOnlySpan&lt;byte&gt;</type>
         <value>
-          <code>new byte[] {{ 0x54, 0x65, 0x73, 0x74, 0x00 }}</code>
+          <code>""Test\0\\\r\n\t\""""u8</code>
         </value>
       </constant>
     </class>
@@ -326,7 +328,7 @@ static const char* const MyConst3 = ""Test"";";
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task UncheckedConversionMacroTestImpl()
@@ -363,7 +365,7 @@ static const char* const MyConst3 = ""Test"";";
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task UncheckedFunctionLikeCastMacroTestImpl()
@@ -389,7 +391,7 @@ static const char* const MyConst3 = ""Test"";";
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task UncheckedConversionMacroTest2Impl()
@@ -415,7 +417,7 @@ static const char* const MyConst3 = ""Test"";";
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents, excludedNames: UncheckedConversionMacroTest2ExcludedNames);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents, excludedNames: UncheckedConversionMacroTest2ExcludedNames);
     }
 
     protected override Task UncheckedPointerMacroTestImpl()
@@ -439,7 +441,7 @@ static const char* const MyConst3 = ""Test"";";
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task UncheckedReinterpretCastMacroTestImpl()
@@ -465,7 +467,7 @@ static const char* const MyConst3 = ""Test"";";
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task MultidimensionlArrayTestImpl()
@@ -499,7 +501,7 @@ static const char* const MyConst3 = ""Test"";";
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task ConditionalDefineConstTestImpl()
@@ -526,6 +528,6 @@ static const char* const MyConst3 = ""Test"";";
 ";
         var diagnostics = new Diagnostic[] { new Diagnostic(DiagnosticLevel.Warning, "Function like macro definition records are not supported: 'TESTRESULT_FROM_WIN32'. Generated bindings may be incomplete.", "Line 2, Column 9 in ClangUnsavedFile.h") };
 
-        return ValidateGeneratedXmlDefaultUnixBindingsAsync(inputContents, expectedOutputContents, expectedDiagnostics: diagnostics);
+        return ValidateGeneratedXmlLatestUnixBindingsAsync(inputContents, expectedOutputContents, expectedDiagnostics: diagnostics);
     }
 }

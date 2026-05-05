@@ -1,0 +1,47 @@
+<Solution>
+  <Folder Name="/.github/" />
+  <Folder Name="/.github/workflows/">
+    <File Path=".github/workflows/ci.yml" />
+  </Folder>
+  <Folder Name="/scripts/">
+    <File Path="scripts/build.ps1" />
+    <File Path="scripts/build.sh" />
+    <File Path="scripts/cibuild.cmd" />
+    <File Path="scripts/cibuild.sh" />
+    <File Path="scripts/SignClientFileList.txt" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="build.cmd" />
+    <File Path="build.sh" />
+    <File Path="CODE_OF_CONDUCT.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="exclusion.dic" />
+    <File Path="global.json" />
+    <File Path="LICENSE.md" />
+    <File Path="NuGet.config" />
+    <File Path="Open.snk" />
+    <File Path="pack.cmd" />
+    <File Path="pack.sh" />
+    <File Path="README.md" />
+    <File Path="restore.cmd" />
+    <File Path="restore.sh" />
+    <File Path="test.cmd" />
+    <File Path="test.sh" />
+  </Folder>
+  <Folder Name="/sources/">
+    <File Path="sources/Directory.Build.props" />
+    <File Path="sources/Directory.Build.targets" />
+    <Project Path="sources/ClangSharp.PInvokeGenerator/ClangSharp.PInvokeGenerator.csproj" />
+    <Project Path="sources/ClangSharpPInvokeGenerator/ClangSharpPInvokeGenerator.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <File Path="tests/Directory.Build.props" />
+    <File Path="tests/Directory.Build.targets" />
+    <Project Path="tests/ClangSharp.PInvokeGenerator.UnitTests/ClangSharp.PInvokeGenerator.UnitTests.csproj" />
+  </Folder>
+</Solution>

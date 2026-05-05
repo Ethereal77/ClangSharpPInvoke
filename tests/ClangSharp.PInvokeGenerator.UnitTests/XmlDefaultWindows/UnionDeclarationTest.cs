@@ -1,12 +1,13 @@
 // Copyright (c) .NET Foundation and Contributors. All Rights Reserved. Licensed under the MIT License (MIT). See License.md in the repository root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace ClangSharp.UnitTests;
 
+[Platform("win")]
 public sealed class XmlDefaultWindows_UnionDeclarationTest : UnionDeclarationTest
 {
     protected override Task BasicTestImpl(string nativeType, string expectedManagedType)
@@ -37,7 +38,7 @@ public sealed class XmlDefaultWindows_UnionDeclarationTest : UnionDeclarationTes
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task BasicTestInCModeImpl(string nativeType, string expectedManagedType)
@@ -67,7 +68,7 @@ public sealed class XmlDefaultWindows_UnionDeclarationTest : UnionDeclarationTes
   </namespace>
 </bindings>
 ";
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents, commandlineArgs: Array.Empty<string>());
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents, commandLineArgs: []);
     }
 
     protected override Task BasicWithNativeTypeNameTestImpl(string nativeType, string expectedManagedType)
@@ -98,7 +99,7 @@ public sealed class XmlDefaultWindows_UnionDeclarationTest : UnionDeclarationTes
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task BitfieldTestImpl()
@@ -277,14 +278,14 @@ union MyUnion3
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task ExcludeTestImpl()
     {
         var inputContents = "typedef union MyUnion MyUnion;";
         var expectedOutputContents = string.Empty;
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents, excludedNames: ExcludeTestExcludedNames);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents, excludedNames: ExcludeTestExcludedNames);
     }
 
     protected override Task FixedSizedBufferNonPrimitiveTestImpl(string nativeType, string expectedManagedType)
@@ -313,35 +314,17 @@ union MyOtherUnion
         <type native=""MyUnion[3]"" count=""3"" fixed=""_c_e__FixedBuffer"">MyUnion</type>
       </field>
       <struct name=""_c_e__FixedBuffer"" access=""public"">
+        <attribute>InlineArray(3)</attribute>
         <field name=""e0"" access=""public"">
           <type>MyUnion</type>
         </field>
-        <field name=""e1"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e2"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <indexer access=""public"">
-          <type>ref MyUnion</type>
-          <param name=""index"">
-            <type>int</type>
-          </param>
-          <get>
-            <code>return ref AsSpan()[index];</code>
-          </get>
-        </indexer>
-        <function name=""AsSpan"" access=""public"">
-          <type>Span&lt;MyUnion&gt;</type>
-          <code>MemoryMarshal.CreateSpan(ref e0, 3);</code>
-        </function>
       </struct>
     </struct>
   </namespace>
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task FixedSizedBufferNonPrimitiveMultidimensionalTestImpl(string nativeType, string expectedManagedType)
@@ -370,98 +353,17 @@ union MyOtherUnion
         <type native=""MyUnion[2][1][3][4]"" count=""2 * 1 * 3 * 4"" fixed=""_c_e__FixedBuffer"">MyUnion</type>
       </field>
       <struct name=""_c_e__FixedBuffer"" access=""public"">
+        <attribute>InlineArray(2 * 1 * 3 * 4)</attribute>
         <field name=""e0_0_0_0"" access=""public"">
           <type>MyUnion</type>
         </field>
-        <field name=""e1_0_0_0"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e0_0_1_0"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e1_0_1_0"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e0_0_2_0"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e1_0_2_0"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e0_0_0_1"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e1_0_0_1"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e0_0_1_1"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e1_0_1_1"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e0_0_2_1"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e1_0_2_1"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e0_0_0_2"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e1_0_0_2"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e0_0_1_2"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e1_0_1_2"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e0_0_2_2"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e1_0_2_2"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e0_0_0_3"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e1_0_0_3"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e0_0_1_3"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e1_0_1_3"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e0_0_2_3"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e1_0_2_3"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <indexer access=""public"">
-          <type>ref MyUnion</type>
-          <param name=""index"">
-            <type>int</type>
-          </param>
-          <get>
-            <code>return ref AsSpan()[index];</code>
-          </get>
-        </indexer>
-        <function name=""AsSpan"" access=""public"">
-          <type>Span&lt;MyUnion&gt;</type>
-          <code>MemoryMarshal.CreateSpan(ref e0_0_0_0, 24);</code>
-        </function>
       </struct>
     </struct>
   </namespace>
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task FixedSizedBufferNonPrimitiveTypedefTestImpl(string nativeType, string expectedManagedType)
@@ -492,35 +394,17 @@ union MyOtherUnion
         <type native=""MyBuffer"" count=""3"" fixed=""_c_e__FixedBuffer"">MyUnion</type>
       </field>
       <struct name=""_c_e__FixedBuffer"" access=""public"">
+        <attribute>InlineArray(3)</attribute>
         <field name=""e0"" access=""public"">
           <type>MyUnion</type>
         </field>
-        <field name=""e1"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e2"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <indexer access=""public"">
-          <type>ref MyUnion</type>
-          <param name=""index"">
-            <type>int</type>
-          </param>
-          <get>
-            <code>return ref AsSpan()[index];</code>
-          </get>
-        </indexer>
-        <function name=""AsSpan"" access=""public"">
-          <type>Span&lt;MyUnion&gt;</type>
-          <code>MemoryMarshal.CreateSpan(ref e0, 3);</code>
-        </function>
       </struct>
     </struct>
   </namespace>
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task FixedSizedBufferNonPrimitiveWithNativeTypeNameTestImpl(string nativeType, string expectedManagedType)
@@ -549,35 +433,17 @@ union MyOtherUnion
         <type native=""MyUnion[3]"" count=""3"" fixed=""_c_e__FixedBuffer"">MyUnion</type>
       </field>
       <struct name=""_c_e__FixedBuffer"" access=""public"">
+        <attribute>InlineArray(3)</attribute>
         <field name=""e0"" access=""public"">
           <type>MyUnion</type>
         </field>
-        <field name=""e1"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <field name=""e2"" access=""public"">
-          <type>MyUnion</type>
-        </field>
-        <indexer access=""public"">
-          <type>ref MyUnion</type>
-          <param name=""index"">
-            <type>int</type>
-          </param>
-          <get>
-            <code>return ref AsSpan()[index];</code>
-          </get>
-        </indexer>
-        <function name=""AsSpan"" access=""public"">
-          <type>Span&lt;MyUnion&gt;</type>
-          <code>MemoryMarshal.CreateSpan(ref e0, 3);</code>
-        </function>
       </struct>
     </struct>
   </namespace>
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task FixedSizedBufferPointerTestImpl(string nativeType, string expectedManagedType)
@@ -623,7 +489,7 @@ union MyOtherUnion
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task FixedSizedBufferPrimitiveTestImpl(string nativeType, string expectedManagedType)
@@ -637,16 +503,22 @@ union MyOtherUnion
         var expectedOutputContents = $@"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
 <bindings>
   <namespace name=""ClangSharp.Test"">
-    <struct name=""MyUnion"" access=""public"" unsafe=""true"" layout=""Explicit"">
+    <struct name=""MyUnion"" access=""public"" layout=""Explicit"">
       <field name=""c"" access=""public"" offset=""0"">
         <type native=""{nativeType}[3]"" count=""3"" fixed=""_c_e__FixedBuffer"">{expectedManagedType}</type>
       </field>
+      <struct name=""_c_e__FixedBuffer"" access=""public"">
+        <attribute>InlineArray(3)</attribute>
+        <field name=""e0"" access=""public"">
+          <type>{expectedManagedType}</type>
+        </field>
+      </struct>
     </struct>
   </namespace>
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task FixedSizedBufferPrimitiveMultidimensionalTestImpl(string nativeType, string expectedManagedType)
@@ -660,16 +532,22 @@ union MyOtherUnion
         var expectedOutputContents = $@"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
 <bindings>
   <namespace name=""ClangSharp.Test"">
-    <struct name=""MyUnion"" access=""public"" unsafe=""true"" layout=""Explicit"">
+    <struct name=""MyUnion"" access=""public"" layout=""Explicit"">
       <field name=""c"" access=""public"" offset=""0"">
         <type native=""{nativeType}[2][1][3][4]"" count=""2 * 1 * 3 * 4"" fixed=""_c_e__FixedBuffer"">{expectedManagedType}</type>
       </field>
+      <struct name=""_c_e__FixedBuffer"" access=""public"">
+        <attribute>InlineArray(2 * 1 * 3 * 4)</attribute>
+        <field name=""e0_0_0_0"" access=""public"">
+          <type>{expectedManagedType}</type>
+        </field>
+      </struct>
     </struct>
   </namespace>
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task FixedSizedBufferPrimitiveTypedefTestImpl(string nativeType, string expectedManagedType)
@@ -685,16 +563,22 @@ union MyUnion
         var expectedOutputContents = $@"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
 <bindings>
   <namespace name=""ClangSharp.Test"">
-    <struct name=""MyUnion"" access=""public"" unsafe=""true"" layout=""Explicit"">
+    <struct name=""MyUnion"" access=""public"" layout=""Explicit"">
       <field name=""c"" access=""public"" offset=""0"">
         <type native=""MyBuffer"" count=""3"" fixed=""_c_e__FixedBuffer"">{expectedManagedType}</type>
       </field>
+      <struct name=""_c_e__FixedBuffer"" access=""public"">
+        <attribute>InlineArray(3)</attribute>
+        <field name=""e0"" access=""public"">
+          <type>{expectedManagedType}</type>
+        </field>
+      </struct>
     </struct>
   </namespace>
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
     protected override Task GuidTestImpl()
     {
@@ -738,7 +622,7 @@ union DECLSPEC_UUID(""00000000-0000-0000-C000-000000000047"") MyUnion2
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents, excludedNames: GuidTestExcludedNames);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents, excludedNames: GuidTestExcludedNames);
     }
 
     protected override Task NestedAnonymousTestImpl(string nativeType, string expectedManagedType, int line, int column)
@@ -772,7 +656,7 @@ union MyUnion
         <type>{expectedManagedType}</type>
       </field>
     </struct>
-    <struct name=""MyUnion"" access=""public"" unsafe=""true"" layout=""Explicit"">
+    <struct name=""MyUnion"" access=""public"" layout=""Explicit"">
       <field name=""r"" access=""public"" offset=""0"">
         <type>{expectedManagedType}</type>
       </field>
@@ -788,22 +672,22 @@ union MyUnion
       <field name=""a"" access=""public"">
         <type>ref {expectedManagedType}</type>
         <get>
-          <code>return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.a, 1));</code>
+          <code>return ref Anonymous.a;</code>
         </get>
       </field>
       <field name=""s"" access=""public"">
         <type>ref MyStruct</type>
         <get>
-          <code>return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.s, 1));</code>
+          <code>return ref Anonymous.s;</code>
         </get>
       </field>
       <field name=""buffer"" access=""public"">
         <type>Span&lt;{expectedManagedType}&gt;</type>
         <get>
-          <code>return MemoryMarshal.CreateSpan(ref Anonymous.buffer[0], 4);</code>
+          <code>return Anonymous.buffer;</code>
         </get>
       </field>
-      <struct name=""_Anonymous_e__Union"" access=""public"" unsafe=""true"" layout=""Explicit"">
+      <struct name=""_Anonymous_e__Union"" access=""public"" layout=""Explicit"">
         <field name=""a"" access=""public"" offset=""0"">
           <type>{expectedManagedType}</type>
         </field>
@@ -813,13 +697,19 @@ union MyUnion
         <field name=""buffer"" access=""public"" offset=""0"">
           <type native=""{nativeType}[4]"" count=""4"" fixed=""_buffer_e__FixedBuffer"">{expectedManagedType}</type>
         </field>
+        <struct name=""_buffer_e__FixedBuffer"" access=""public"">
+          <attribute>InlineArray(4)</attribute>
+          <field name=""e0"" access=""public"">
+            <type>{expectedManagedType}</type>
+          </field>
+        </struct>
       </struct>
     </struct>
   </namespace>
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task NestedAnonymousWithBitfieldTestImpl()
@@ -859,41 +749,41 @@ union MyUnion
       <field name=""z"" access=""public"">
         <type>ref int</type>
         <get>
-          <code>return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.z, 1));</code>
+          <code>return ref Anonymous.z;</code>
         </get>
       </field>
       <field name=""w"" access=""public"">
         <type>ref int</type>
         <get>
-          <code>return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.Anonymous.w, 1));</code>
+          <code>return ref Anonymous.Anonymous1.w;</code>
         </get>
       </field>
       <field name=""o0_b0_16"" access=""public"">
         <type>int</type>
         <get>
-          <code>return Anonymous.Anonymous.o0_b0_16;</code>
+          <code>return Anonymous.Anonymous1.o0_b0_16;</code>
         </get>
         <set>
-          <code>Anonymous.Anonymous.o0_b0_16 = value;</code>
+          <code>Anonymous.Anonymous1.o0_b0_16 = value;</code>
         </set>
       </field>
       <field name=""o0_b16_4"" access=""public"">
         <type>int</type>
         <get>
-          <code>return Anonymous.Anonymous.o0_b16_4;</code>
+          <code>return Anonymous.Anonymous1.o0_b16_4;</code>
         </get>
         <set>
-          <code>Anonymous.Anonymous.o0_b16_4 = value;</code>
+          <code>Anonymous.Anonymous1.o0_b16_4 = value;</code>
         </set>
       </field>
       <struct name=""_Anonymous_e__Union"" access=""public"" layout=""Explicit"">
         <field name=""z"" access=""public"" offset=""0"">
           <type>int</type>
         </field>
-        <field name=""Anonymous"" access=""public"" offset=""0"">
-          <type native=""__AnonymousRecord_ClangUnsavedFile_L10_C9"">_Anonymous_e__Union</type>
+        <field name=""Anonymous1"" access=""public"" offset=""0"">
+          <type native=""__AnonymousRecord_ClangUnsavedFile_L10_C9"">_Anonymous1_e__Union</type>
         </field>
-        <struct name=""_Anonymous_e__Union"" access=""public"" layout=""Explicit"">
+        <struct name=""_Anonymous1_e__Union"" access=""public"" layout=""Explicit"">
           <field name=""w"" access=""public"" offset=""0"">
             <type>int</type>
           </field>
@@ -927,7 +817,7 @@ union MyUnion
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
 
@@ -981,7 +871,7 @@ union MyUnion
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task NestedWithNativeTypeNameTestImpl(string nativeType, string expectedManagedType)
@@ -1034,7 +924,7 @@ union MyUnion
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task NewKeywordTestImpl()
@@ -1080,7 +970,7 @@ union MyUnion
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task NoDefinitionTestImpl()
@@ -1094,7 +984,7 @@ union MyUnion
   </namespace>
 </bindings>
 ";
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task PointerToSelfTestImpl()
@@ -1119,7 +1009,7 @@ union MyUnion
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task PointerToSelfViaTypedefTestImpl()
@@ -1146,7 +1036,7 @@ union example_s {
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task RemapTestImpl()
@@ -1162,7 +1052,7 @@ union example_s {
 ";
 
         var remappedNames = new Dictionary<string, string> { ["_MyUnion"] = "MyUnion" };
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents, remappedNames: remappedNames);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents, remappedNames: remappedNames);
     }
 
     protected override Task RemapNestedAnonymousTestImpl()
@@ -1198,7 +1088,7 @@ union example_s {
       <field name=""a"" access=""public"">
         <type>ref double</type>
         <get>
-          <code>return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.a, 1));</code>
+          <code>return ref Anonymous.a;</code>
         </get>
       </field>
       <struct name=""_Anonymous_e__Union"" access=""public"" layout=""Explicit"">
@@ -1215,7 +1105,7 @@ union example_s {
             ["__AnonymousField_ClangUnsavedFile_L7_C5"] = "Anonymous",
             ["__AnonymousRecord_ClangUnsavedFile_L7_C5"] = "_Anonymous_e__Union"
         };
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents, remappedNames: remappedNames);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents, remappedNames: remappedNames);
     }
 
     protected override Task SkipNonDefinitionTestImpl(string nativeType, string expectedManagedType)
@@ -1248,7 +1138,7 @@ union MyUnion
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task SkipNonDefinitionPointerTestImpl()
@@ -1265,7 +1155,7 @@ typedef union MyUnion& MyUnionRef;
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task SkipNonDefinitionWithNativeTypeNameTestImpl(string nativeType, string expectedManagedType)
@@ -1298,7 +1188,7 @@ union MyUnion
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 
     protected override Task TypedefTestImpl(string nativeType, string expectedManagedType)
@@ -1331,6 +1221,97 @@ union MyUnion
 </bindings>
 ";
 
-        return ValidateGeneratedXmlDefaultWindowsBindingsAsync(inputContents, expectedOutputContents);
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
+    }
+
+    protected override Task UnionWithAnonStructWithAnonUnionImpl()
+    {
+        var inputContents = $@"typedef union _MY_UNION
+{{
+    long AsArray[2];
+    struct
+    {{
+        long First;
+        union
+        {{
+            struct
+            {{
+                long Second;
+            }} A;
+
+            struct
+            {{
+                long Second;
+            }} B;
+        }};
+    }};
+}} MY_UNION;";
+
+        var expectedOutputContents = $@"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes"" ?>
+<bindings>
+  <namespace name=""ClangSharp.Test"">
+    <struct name=""_MY_UNION"" access=""public"" layout=""Explicit"">
+      <field name=""AsArray"" access=""public"" offset=""0"">
+        <type native=""long[2]"" count=""2"" fixed=""_AsArray_e__FixedBuffer"">int</type>
+      </field>
+      <field name=""Anonymous"" access=""public"" offset=""0"">
+        <type native=""__AnonymousRecord_ClangUnsavedFile_L4_C5"">_Anonymous_e__Struct</type>
+      </field>
+      <field name=""First"" access=""public"">
+        <type>ref int</type>
+        <get>
+          <code>return ref Anonymous.First;</code>
+        </get>
+      </field>
+      <field name=""A"" access=""public"">
+        <type>ref _Anonymous_e__Struct._Anonymous_e__Union._A_e__Struct</type>
+        <get>
+          <code>return ref Anonymous.Anonymous.A;</code>
+        </get>
+      </field>
+      <field name=""B"" access=""public"">
+        <type>ref _Anonymous_e__Struct._Anonymous_e__Union._B_e__Struct</type>
+        <get>
+          <code>return ref Anonymous.Anonymous.B;</code>
+        </get>
+      </field>
+      <struct name=""_Anonymous_e__Struct"" access=""public"">
+        <field name=""First"" access=""public"">
+          <type native=""long"">int</type>
+        </field>
+        <field name=""Anonymous"" access=""public"">
+          <type native=""__AnonymousRecord_ClangUnsavedFile_L7_C9"">_Anonymous_e__Union</type>
+        </field>
+        <struct name=""_Anonymous_e__Union"" access=""public"" layout=""Explicit"">
+          <field name=""A"" access=""public"" offset=""0"">
+            <type native=""__AnonymousRecord_ClangUnsavedFile_L9_C13"">_A_e__Struct</type>
+          </field>
+          <field name=""B"" access=""public"" offset=""0"">
+            <type native=""__AnonymousRecord_ClangUnsavedFile_L14_C13"">_B_e__Struct</type>
+          </field>
+          <struct name=""_A_e__Struct"" access=""public"">
+            <field name=""Second"" access=""public"">
+              <type native=""long"">int</type>
+            </field>
+          </struct>
+          <struct name=""_B_e__Struct"" access=""public"">
+            <field name=""Second"" access=""public"">
+              <type native=""long"">int</type>
+            </field>
+          </struct>
+        </struct>
+      </struct>
+      <struct name=""_AsArray_e__FixedBuffer"" access=""public"">
+        <attribute>InlineArray(2)</attribute>
+        <field name=""e0"" access=""public"">
+          <type>int</type>
+        </field>
+      </struct>
+    </struct>
+  </namespace>
+</bindings>
+";
+
+        return ValidateGeneratedXmlLatestWindowsBindingsAsync(inputContents, expectedOutputContents);
     }
 }

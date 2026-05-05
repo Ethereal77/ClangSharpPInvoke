@@ -3,7 +3,7 @@ using System;
 namespace ClangSharp;
 
 [Flags]
-public enum FunctionOrDelegateFlags
+internal enum FunctionOrDelegateFlags
 {
     IsVirtual = 1 << 0,
     IsDllImport = 1 << 1,
@@ -21,4 +21,5 @@ public enum FunctionOrDelegateFlags
     NeedsReturnFixup = 1 << 13,
     IsCxxConstructor = 1 << 14,
     IsManualImport = 1 << 15,
+    IsReadOnly = 1 << 16,
 }
